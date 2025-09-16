@@ -3,20 +3,29 @@ import os
 
 app = Flask(__name__)
 
-# Serve Next.js static files
 @app.route('/')
 def index():
-    return send_file('.next/server/app/page.html')
+    return send_file('../.next/server/app/index.html')
 
-@app.route('/<path:path>')
+@app.route('/auth/signin')
+def signin():
+    return send_file('../.next/server/app/auth/signin/index.html')
+
+@app.route('/auth/signup') 
+def signup():
+    return send_file('../.next/server/app/auth/signup/index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return send_file('../.next/server/app/dashboard.html')
+
+@app.route('/_next/<path:path>')
+def serve_next(path):
+    return send_from_directory('../.next', path)
+
+@app.route('/static/<path:path>')
 def serve_static(path):
-    try:
-        return send_from_directory('.next/static', path)
-    except:
-        try:
-            return send_from_directory('public', path)
-        except:
-            return send_file('.next/server/app/page.html')
+    return send_from_directory('../public', path)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=True)
