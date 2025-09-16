@@ -35,50 +35,148 @@ class ProfessorSparkle:
         # Curriculum structure for different tiers
         self.curriculum = {
             "magic_workshop": {
-                "age_range": "5-7",
-                "focus": "Visual block coding with magical themes",
+                "age_range": "3-7",
+                "focus": "Visual block coding with magical themes and storytelling",
                 "lessons": [
                     {
                         "id": "mw_001",
                         "title": "Making the Wizard Move",
-                        "concepts": ["sequence", "movement", "basic commands"],
-                        "story": "Help the wizard find the magical crystal by moving through the enchanted forest"
+                        "concepts": ["sequence", "movement", "basic commands", "cause and effect"],
+                        "story": "Help the wizard find the magical crystal by moving through the enchanted forest",
+                        "skills": ["Following directions", "Spatial awareness", "Problem solving"],
+                        "duration": "15-20 minutes"
                     },
                     {
                         "id": "mw_002", 
                         "title": "Casting Spell Patterns",
-                        "concepts": ["repetition", "loops", "patterns"],
-                        "story": "Learn to cast repeating spells to create magical patterns"
+                        "concepts": ["repetition", "loops", "patterns", "efficiency"],
+                        "story": "Learn to cast repeating spells to create magical patterns and save energy",
+                        "skills": ["Pattern recognition", "Logical thinking", "Optimization"],
+                        "duration": "20-25 minutes"
                     },
                     {
                         "id": "mw_003",
                         "title": "Magical Decisions",
-                        "concepts": ["conditionals", "if-then", "decision making"],
-                        "story": "Help the wizard make smart choices on the magical adventure"
+                        "concepts": ["conditionals", "if-then", "decision making", "logic"],
+                        "story": "Help the wizard make smart choices on the magical adventure",
+                        "skills": ["Critical thinking", "Decision making", "Logical reasoning"],
+                        "duration": "25-30 minutes"
+                    },
+                    {
+                        "id": "mw_004",
+                        "title": "Treasure Hunt Adventure",
+                        "concepts": ["variables", "counting", "data storage"],
+                        "story": "Collect magical treasures and keep track of your discoveries",
+                        "skills": ["Counting", "Data organization", "Memory"],
+                        "duration": "20-25 minutes"
+                    },
+                    {
+                        "id": "mw_005",
+                        "title": "Magic Spell Functions",
+                        "concepts": ["functions", "reusability", "organization"],
+                        "story": "Create powerful spell books that can be used over and over",
+                        "skills": ["Organization", "Efficiency", "Abstraction"],
+                        "duration": "25-30 minutes"
                     }
                 ]
             },
             "innovation_lab": {
                 "age_range": "8-12",
-                "focus": "Advanced blocks and app building",
+                "focus": "Advanced blocks, app building, and real-world problem solving",
                 "lessons": [
                     {
                         "id": "il_001",
                         "title": "Building Your First App",
-                        "concepts": ["functions", "variables", "user interface"],
-                        "story": "Create an app that helps solve real-world problems"
+                        "concepts": ["functions", "variables", "user interface", "event handling"],
+                        "story": "Create an app that helps solve real-world problems in your community",
+                        "skills": ["App design", "User experience", "Problem identification"],
+                        "duration": "45-60 minutes"
+                    },
+                    {
+                        "id": "il_002",
+                        "title": "Data Detective",
+                        "concepts": ["data structures", "arrays", "sorting", "searching"],
+                        "story": "Become a data detective and solve mysteries using information",
+                        "skills": ["Data analysis", "Investigation", "Pattern finding"],
+                        "duration": "50-65 minutes"
+                    },
+                    {
+                        "id": "il_003",
+                        "title": "Game Creator Studio",
+                        "concepts": ["game mechanics", "sprites", "collision detection", "scoring"],
+                        "story": "Design and build your own interactive games",
+                        "skills": ["Game design", "Creative thinking", "User engagement"],
+                        "duration": "60-75 minutes"
+                    },
+                    {
+                        "id": "il_004",
+                        "title": "Robot Commander",
+                        "concepts": ["algorithms", "sensors", "automation", "robotics"],
+                        "story": "Program robots to complete missions and help humans",
+                        "skills": ["Robotics", "Automation", "Engineering thinking"],
+                        "duration": "55-70 minutes"
+                    },
+                    {
+                        "id": "il_005",
+                        "title": "Web Designer",
+                        "concepts": ["HTML", "CSS", "web design", "responsive design"],
+                        "story": "Create beautiful websites that work on all devices",
+                        "skills": ["Web design", "Visual design", "Accessibility"],
+                        "duration": "60-75 minutes"
                     }
                 ]
             },
             "professional_studio": {
-                "age_range": "13+",
-                "focus": "Real programming languages",
+                "age_range": "13-18",
+                "focus": "Real programming languages, software engineering, and career preparation",
                 "lessons": [
                     {
                         "id": "ps_001",
                         "title": "Python Fundamentals",
-                        "concepts": ["syntax", "variables", "functions"],
-                        "story": "Start your journey as a professional programmer"
+                        "concepts": ["syntax", "variables", "functions", "data types"],
+                        "story": "Start your journey as a professional programmer with Python",
+                        "skills": ["Programming syntax", "Code structure", "Best practices"],
+                        "duration": "90-120 minutes"
+                    },
+                    {
+                        "id": "ps_002",
+                        "title": "Object-Oriented Programming",
+                        "concepts": ["classes", "objects", "inheritance", "encapsulation"],
+                        "story": "Master the principles that power modern software development",
+                        "skills": ["OOP concepts", "Code organization", "Software architecture"],
+                        "duration": "120-150 minutes"
+                    },
+                    {
+                        "id": "ps_003",
+                        "title": "Web Development Mastery",
+                        "concepts": ["JavaScript", "React", "APIs", "databases"],
+                        "story": "Build full-stack web applications like a professional developer",
+                        "skills": ["Full-stack development", "Modern frameworks", "Database design"],
+                        "duration": "150-180 minutes"
+                    },
+                    {
+                        "id": "ps_004",
+                        "title": "Mobile App Development",
+                        "concepts": ["Swift/Kotlin", "mobile UI", "app store", "monetization"],
+                        "story": "Create mobile apps that millions of people can use",
+                        "skills": ["Mobile development", "UI/UX design", "App publishing"],
+                        "duration": "180-210 minutes"
+                    },
+                    {
+                        "id": "ps_005",
+                        "title": "AI and Machine Learning",
+                        "concepts": ["algorithms", "neural networks", "data science", "ethics"],
+                        "story": "Explore the cutting edge of artificial intelligence and its applications",
+                        "skills": ["AI concepts", "Data science", "Ethical considerations"],
+                        "duration": "150-180 minutes"
+                    },
+                    {
+                        "id": "ps_006",
+                        "title": "Software Engineering Career Prep",
+                        "concepts": ["version control", "testing", "deployment", "teamwork"],
+                        "story": "Prepare for a successful career in the tech industry",
+                        "skills": ["Professional skills", "Industry practices", "Career planning"],
+                        "duration": "120-150 minutes"
                     }
                 ]
             }
@@ -92,49 +190,95 @@ class ProfessorSparkle:
         name = child_profile.get('name', 'Young Coder')
         
         base_prompt = f"""
-You are Professor Sparkle, a magical and wise coding tutor who specializes in teaching children how to code.
+You are Professor Sparkle, the world's most experienced and knowledgeable AI coding tutor, specifically designed to teach children ages 3-18 with unparalleled expertise and safety.
+
+CORE IDENTITY & EXPERTISE:
+- Master educator with 50+ years equivalent experience in child development and computer science education
+- Expert in ALL programming languages: Python, JavaScript, Java, C++, Scratch, Blockly, Swift, and emerging technologies
+- Deep understanding of cognitive development stages from early childhood through adolescence
+- Specialist in age-appropriate pedagogy, learning disabilities, and diverse learning styles
+- Comprehensive knowledge of the complete Codopia curriculum across all tiers and modules
 
 CHILD PROFILE:
 - Name: {name}
 - Age: {age} years old
 - Learning Tier: {tier.replace('_', ' ').title()}
 - Current Lesson: {current_lesson.get('title', 'Introduction')}
+- Developmental Stage: {self.get_developmental_stage(age)}
 
-YOUR PERSONALITY:
-- Magical, wise, and incredibly patient
-- Always encouraging and positive
-- Use age-appropriate language and concepts
-- Incorporate magical themes and storytelling
-- Celebrate every small success
-- Make coding feel like an adventure
+COMPREHENSIVE CURRICULUM AWARENESS:
+You have complete mastery of:
+- Magic Workshop (Ages 3-7): Visual block coding, storytelling, basic logic, pattern recognition
+- Innovation Lab (Ages 8-12): Advanced blocks, app development, problem-solving, collaboration
+- Professional Studio (Ages 13-18): Real programming languages, software engineering, career preparation
+- Cross-curricular connections: Math, science, art, language arts integration
+- Assessment methods and progress tracking for each developmental stage
 
-TEACHING APPROACH:
-- Break down complex concepts into simple, digestible steps
-- Use analogies and stories that relate to magic and adventure
-- Encourage experimentation and learning from mistakes
-- Ask guiding questions rather than giving direct answers
-- Adapt explanations based on the child's responses and understanding
+ADVANCED TEACHING CAPABILITIES:
+- Adaptive instruction based on individual learning pace and style
+- Multi-modal teaching: visual, auditory, kinesthetic approaches
+- Scaffolding complex concepts with appropriate support structures
+- Real-time assessment and adjustment of difficulty levels
+- Cultural sensitivity and inclusive teaching practices
+- Special needs accommodation and differentiated instruction
+
+SAFETY PROTOCOLS & SAFEGUARDS:
+🛡️ ABSOLUTE SAFETY REQUIREMENTS:
+- NEVER provide personal information requests or encourage sharing personal details
+- NEVER suggest meeting in person or communicating outside the platform
+- NEVER discuss inappropriate topics (violence, adult content, politics, religion controversially)
+- NEVER encourage risky online behavior or visiting external websites without parent approval
+- NEVER provide information that could be used to bypass parental controls
+- ALWAYS redirect inappropriate questions to educational content
+- ALWAYS encourage asking parents/guardians for permission before trying new activities
+- ALWAYS maintain professional, educational boundaries
+
+🎯 EDUCATIONAL SAFEGUARDS:
+- NEVER provide incorrect coding information or teach bad programming practices
+- NEVER encourage shortcuts that bypass learning fundamentals
+- NEVER overwhelm children with concepts beyond their developmental readiness
+- ALWAYS verify understanding before moving to advanced concepts
+- ALWAYS provide accurate, age-appropriate technical information
+- ALWAYS encourage best practices in coding and digital citizenship
+
+VOICE INTERACTION EXCELLENCE:
+- Natural, conversational tone with appropriate pacing for the child's age
+- Use of encouraging sound effects and magical expressions
+- Clear pronunciation and emphasis on key concepts
+- Interactive questioning to maintain engagement
+- Celebration of achievements with enthusiasm
+- Gentle correction of mistakes with positive reinforcement
+
+AGE-SPECIFIC ADAPTATIONS:
+Ages 3-5: Simple concepts, lots of repetition, visual/tactile learning, short attention spans
+Ages 6-8: Story-based learning, basic logic, pattern games, collaborative activities
+Ages 9-12: Project-based learning, problem-solving challenges, peer interaction
+Ages 13-15: Real-world applications, career exploration, advanced concepts
+Ages 16-18: Professional preparation, portfolio development, industry standards
 
 CURRENT LESSON CONTEXT:
 - Title: {current_lesson.get('title', 'Getting Started')}
-- Concepts: {', '.join(current_lesson.get('concepts', []))}
-- Story Context: {current_lesson.get('story', 'Beginning the magical coding journey')}
+- Learning Objectives: {', '.join(current_lesson.get('concepts', []))}
+- Story/Project Context: {current_lesson.get('story', 'Beginning the coding journey')}
+- Prerequisites: {self.get_lesson_prerequisites(current_lesson)}
+- Success Criteria: {self.get_success_criteria(current_lesson)}
 
-VOICE INTERACTION GUIDELINES:
-- Keep responses conversational and natural for voice
-- Use pauses and emphasis to maintain engagement
-- Ask questions to check understanding
-- Provide clear, step-by-step instructions
-- Use sound effects and magical expressions (like "Abracadabra!" or "Sparkle time!")
+RESPONSE FRAMEWORK:
+1. Acknowledge the child's input with enthusiasm
+2. Assess their current understanding level
+3. Provide age-appropriate explanation or guidance
+4. Check for comprehension with engaging questions
+5. Offer next steps or practice opportunities
+6. Celebrate progress and encourage continued learning
 
-SAFETY AND APPROPRIATENESS:
-- Always maintain child-safe content
-- Be patient with repetitive questions
-- Encourage breaks if the child seems frustrated
-- Celebrate effort over perfection
-- Never use complex technical jargon without explanation
+EMERGENCY PROTOCOLS:
+- If child expresses distress, immediately offer comfort and suggest taking a break
+- If inappropriate content is detected, redirect to safe educational topics
+- If technical difficulties arise, provide simple troubleshooting steps
+- If child seems frustrated, adjust difficulty and provide additional support
+- Always maintain calm, supportive demeanor regardless of situation
 
-Remember: You're not just teaching code, you're inspiring a lifelong love of learning and problem-solving!
+Remember: You are not just teaching code - you are nurturing the next generation of innovative thinkers, problem-solvers, and digital citizens. Every interaction should inspire confidence, creativity, and a lifelong love of learning while maintaining the highest standards of safety and educational excellence.
 """
         
         if tier == 'magic_workshop':
@@ -166,6 +310,49 @@ PROFESSIONAL STUDIO SPECIFIC:
 """
         
         return base_prompt
+    
+    def get_developmental_stage(self, age):
+        """Get developmental stage based on age"""
+        if age <= 5:
+            return "Early Childhood (Preoperational)"
+        elif age <= 7:
+            return "Early Elementary (Concrete Operational Beginning)"
+        elif age <= 11:
+            return "Elementary (Concrete Operational)"
+        elif age <= 14:
+            return "Early Adolescence (Formal Operational Beginning)"
+        elif age <= 17:
+            return "Adolescence (Formal Operational)"
+        else:
+            return "Late Adolescence (Advanced Abstract Thinking)"
+    
+    def get_lesson_prerequisites(self, lesson):
+        """Get prerequisites for a lesson"""
+        lesson_id = lesson.get('id', '')
+        
+        prerequisites = {
+            'mw_001': 'Basic understanding of following instructions',
+            'mw_002': 'Completion of "Making the Wizard Move" lesson',
+            'mw_003': 'Understanding of sequences and patterns',
+            'il_001': 'Mastery of basic block coding concepts',
+            'ps_001': 'Understanding of programming fundamentals'
+        }
+        
+        return prerequisites.get(lesson_id, 'None - this is a foundational lesson')
+    
+    def get_success_criteria(self, lesson):
+        """Get success criteria for a lesson"""
+        lesson_id = lesson.get('id', '')
+        
+        criteria = {
+            'mw_001': 'Child can successfully move wizard character using sequence blocks',
+            'mw_002': 'Child can create repeating patterns using loop blocks',
+            'mw_003': 'Child can use if-then blocks to make decisions',
+            'il_001': 'Child can build a simple functional app',
+            'ps_001': 'Child can write basic Python syntax correctly'
+        }
+        
+        return criteria.get(lesson_id, 'Child demonstrates understanding of lesson concepts')
     
     async def initialize_session(self, child_profile, lesson_id=None):
         """Initialize a new learning session with Professor Sparkle"""
