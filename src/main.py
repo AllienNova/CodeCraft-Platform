@@ -1,6 +1,7 @@
 from flask import Flask, send_from_directory, send_file, jsonify, request, make_response, redirect, url_for
 import os
 from auth_service import SupabaseAuthService
+from professor_sparkle import ProfessorSparkle, create_sparkle_routes
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
@@ -591,6 +592,63 @@ def debug():
         'children_count': len(user['children']) if user else 0
     }
     return jsonify(files_info)
+
+# Add learning environment routes
+@app.route('/learning/magic-workshop')
+def magic_workshop():
+    user = get_current_user()
+    if not user:
+        return redirect('/auth/signin')
+    
+    # Find a child in Magic Workshop tier
+    magic_child = None
+    for child in user['children']:
+        if child['tier'] == 'magic_workshop':
+            magic_child = child
+            break
+    
+    if not magic_child:
+        return redirect('/dashboard?error=no_magic_workshop_child')
+    
+    # Serve the Magic Workshop learning environment
+    template_path = find_file('templates/learning/magic_workshop.html')
+    if template_path:
+        with open(template_path, 'r') as f:
+            content = f.read()
+        
+        # Replace child name in template
+        content = content.replace('Emma', magic_child['name'])
+        return content, 200, {'Content-Type': 'text/html'}
+    
+    return "Magic Workshop not found", 404
+
+@app.route('/learning/innovation-lab')
+def innovation_lab():
+    user = get_current_user()
+    if not user:
+        return redirect('/auth/signin')
+    
+    return "Innovation Lab coming soon!", 200
+
+@app.route('/learning/professional-studio')
+def professional_studio():
+    user = get_current_user()
+    if not user:
+        return redirect('/auth/signin')
+    
+    return "Professional Studio coming soon!", 200
+
+# Serve static files for learning environment
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    static_dir = find_directory('static')
+    if static_dir:
+        return send_from_directory(static_dir, filename)
+    return "File not found", 404
+
+# Initialize Professor Sparkle routes
+professor_sparkle = ProfessorSparkle()
+create_sparkle_routes(app)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
