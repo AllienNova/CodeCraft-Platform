@@ -416,7 +416,12 @@ def signup():
     
     # Handle POST request
     try:
-        data =@app.route('/signup', methods=['GET', 'POST'])
+        data = request.get_json()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
         return render_template_string(signup_html)
