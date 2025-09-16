@@ -640,7 +640,7 @@ def professional_studio():
 
 # Serve static files for learning environment
 @app.route('/static/<path:filename>')
-def serve_static(filename):
+def serve_learning_static(filename):
     static_dir = find_directory('static')
     if static_dir:
         return send_from_directory(static_dir, filename)
