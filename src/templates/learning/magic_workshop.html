@@ -4,649 +4,670 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Magic Workshop - Codopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .magic-container {
-            display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            grid-template-rows: 60px 1fr;
-            height: 100vh;
-            gap: 10px;
-            padding: 10px;
-        }
-
-        .header {
-            grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #333;
-        }
-
-        .spell-palette {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
-
-        .spell-category {
-            margin-bottom: 20px;
-        }
-
-        .category-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .spell-block {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 20px;
-            cursor: grab;
-            user-select: none;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .spell-block:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .spell-block.movement {
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-        }
-
-        .spell-block.action {
-            background: linear-gradient(135deg, #feca57, #ff9ff3);
-        }
-
-        .spell-block.logic {
-            background: linear-gradient(135deg, #a8edea, #fed6e3);
-            color: #333;
-        }
-
-        .canvas-area {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .canvas-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .canvas-title {
-            font-size: 20px;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .canvas-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .control-btn:hover {
-            background: #5a6fd8;
-        }
-
-        .control-btn.play {
-            background: #27ae60;
-        }
-
-        .control-btn.stop {
-            background: #e74c3c;
-        }
-
-        .spell-canvas {
-            min-height: 400px;
-            border: 3px dashed #ddd;
-            border-radius: 15px;
-            padding: 20px;
-            background: #fafafa;
-            position: relative;
-        }
-
-        .drop-zone {
-            min-height: 100px;
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            margin: 10px 0;
-            padding: 20px;
-            text-align: center;
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-            transition: all 0.3s;
-        }
-
-        .drop-zone.drag-over {
-            background: rgba(102, 126, 234, 0.1);
-            border-color: #5a6fd8;
-            transform: scale(1.02);
-        }
-
-        .character-stage {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .stage-title {
-            font-size: 18px;
-            color: #667eea;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .character {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #ff9a9e, #fecfef);
-            border-radius: 50%;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: transform 0.5s;
-        }
-
-        .character.moving {
-            transform: translateX(50px) rotate(360deg);
-        }
-
-        .progress-bar {
-            background: #f0f0f0;
-            border-radius: 10px;
-            height: 8px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .achievement-badge {
-            background: #ffd700;
-            color: #333;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin: 5px;
-            display: inline-block;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .lesson-info {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .lesson-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .lesson-description {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .spell-sequence {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .sequence-block {
-            background: #667eea;
-            color: white;
-            padding: 8px 15px;
-            margin: 5px;
-            border-radius: 15px;
-            display: inline-block;
-            font-size: 12px;
-            position: relative;
-        }
-
-        .sequence-block::after {
-            content: '→';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #667eea;
-        }
-
-        .sequence-block:last-child::after {
-            display: none;
-        }
-
         @keyframes sparkle {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(180deg); }
+            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
         }
-
-        .sparkle {
-            animation: sparkle 1s infinite;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
-
-        .floating-hearts {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            opacity: 0;
-            animation: float-up 2s ease-out;
+        .sparkle { animation: sparkle 2s linear infinite; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .drag-block {
+            cursor: grab;
+            transition: all 0.3s ease;
         }
-
-        @keyframes float-up {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-50px); }
+        .drag-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .drag-block.dragging {
+            cursor: grabbing;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+        .drop-zone {
+            min-height: 60px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            border-color: #8b5cf6;
+            background-color: #f3f4f6;
+        }
+        .code-canvas {
+            background: linear-gradient(45deg, #f8fafc 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f8fafc 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f8fafc 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f8fafc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
     </style>
 </head>
-<body>
-    <div class="magic-container">
-        <header class="header">
-            <div class="logo">
-                🪄 <span>Magic Workshop</span>
-            </div>
-            <div class="user-info">
-                <span>Welcome, <strong id="childName">Emma</strong>!</span>
-                <span class="achievement-badge">✨ Spell Caster</span>
-                <button class="control-btn" onclick="goToDashboard()">Dashboard</button>
-            </div>
-        </header>
+<body class="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <!-- Floating Sparkles -->
+    <div class="fixed inset-0 pointer-events-none z-10">
+        <div class="sparkle absolute top-20 left-10 w-4 h-4 bg-purple-400 rounded-full"></div>
+        <div class="sparkle absolute top-40 right-20 w-3 h-3 bg-pink-400 rounded-full" style="animation-delay: 0.5s;"></div>
+        <div class="sparkle absolute bottom-40 left-20 w-2 h-2 bg-blue-400 rounded-full" style="animation-delay: 1s;"></div>
+        <div class="sparkle absolute bottom-20 right-10 w-3 h-3 bg-yellow-400 rounded-full" style="animation-delay: 1.5s;"></div>
+    </div>
 
-        <div class="spell-palette">
-            <div class="lesson-info">
-                <div class="lesson-title">🌟 Lesson 1: Make the Wizard Move</div>
-                <div class="lesson-description">Drag spell blocks to make the wizard walk forward!</div>
-            </div>
-
-            <div class="spell-category">
-                <div class="category-title">🚶 Movement Spells</div>
-                <div class="spell-block movement" draggable="true" data-spell="move-forward">
-                    🚶 Move Forward
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="flex items-center space-x-2 text-gray-600 hover:text-purple-600">
+                        <span>←</span>
+                        <span>Back to Dashboard</span>
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-lg">🎨</span>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Magic Workshop</span>
+                    </div>
                 </div>
-                <div class="spell-block movement" draggable="true" data-spell="turn-left">
-                    ↺ Turn Left
-                </div>
-                <div class="spell-block movement" draggable="true" data-spell="turn-right">
-                    ↻ Turn Right
-                </div>
-            </div>
-
-            <div class="spell-category">
-                <div class="category-title">✨ Action Spells</div>
-                <div class="spell-block action" draggable="true" data-spell="cast-sparkles">
-                    ✨ Cast Sparkles
-                </div>
-                <div class="spell-block action" draggable="true" data-spell="say-hello">
-                    💬 Say Hello
-                </div>
-                <div class="spell-block action" draggable="true" data-spell="dance">
-                    💃 Dance
-                </div>
-            </div>
-
-            <div class="spell-category">
-                <div class="category-title">🔄 Logic Spells</div>
-                <div class="spell-block logic" draggable="true" data-spell="repeat">
-                    🔄 Repeat 3 times
-                </div>
-                <div class="spell-block logic" draggable="true" data-spell="if-then">
-                    🤔 If... Then...
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-purple-100 px-3 py-1 rounded-full">
+                        <span class="text-purple-600 font-semibold">{{ child_name }}</span>
+                        <span class="text-purple-500">•</span>
+                        <span class="text-purple-600">Age {{ child_age }}</span>
+                    </div>
+                    <button id="sparkle-btn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all">
+                        ✨ Ask Professor Sparkle
+                    </button>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <div class="canvas-area">
-            <div class="canvas-header">
-                <div class="canvas-title">🎭 Spell Sequence</div>
-                <div class="canvas-controls">
-                    <button class="control-btn play" onclick="runSpells()">▶️ Cast Spells</button>
-                    <button class="control-btn stop" onclick="stopSpells()">⏹️ Stop</button>
-                    <button class="control-btn" onclick="clearSpells()">🗑️ Clear</button>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-4 gap-8">
+            <!-- Lesson Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sticky top-24">
+                    <h2 class="text-2xl font-bold text-purple-700 mb-6">🧙‍♂️ Magic Lessons</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="lesson-item bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-xl cursor-pointer" data-lesson="1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold">Lesson 1: Making the Wizard Move</h3>
+                                    <p class="text-sm opacity-90">Learn basic movement spells</p>
+                                </div>
+                                <span class="text-2xl">🧙‍♂️</span>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-item bg-gray-100 text-gray-600 p-4 rounded-xl cursor-pointer" data-lesson="2">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold">Lesson 2: Casting Spell Patterns</h3>
+                                    <p class="text-sm">Create magical sequences</p>
+                                </div>
+                                <span class="text-2xl">🔮</span>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-item bg-gray-100 text-gray-600 p-4 rounded-xl cursor-pointer" data-lesson="3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold">Lesson 3: Magical Decisions</h3>
+                                    <p class="text-sm">If-then magic spells</p>
+                                </div>
+                                <span class="text-2xl">⚡</span>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-item bg-gray-100 text-gray-600 p-4 rounded-xl cursor-pointer" data-lesson="4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold">Lesson 4: Treasure Hunt</h3>
+                                    <p class="text-sm">Loops and repetition</p>
+                                </div>
+                                <span class="text-2xl">💎</span>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-item bg-gray-100 text-gray-600 p-4 rounded-xl cursor-pointer" data-lesson="5">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold">Lesson 5: Magic Functions</h3>
+                                    <p class="text-sm">Create your own spells</p>
+                                </div>
+                                <span class="text-2xl">🌟</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-purple-50 rounded-xl">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-purple-700 font-semibold">Progress</span>
+                            <span class="text-purple-600">1/5</span>
+                        </div>
+                        <div class="w-full bg-purple-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full" style="width: 20%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="spell-canvas" id="spellCanvas">
-                <div class="drop-zone" id="dropZone">
-                    <p>🎯 Drag spell blocks here to create your magic sequence!</p>
-                    <p style="font-size: 12px; margin-top: 10px;">Try dragging "Move Forward" to make the wizard walk!</p>
+            <!-- Main Learning Area -->
+            <div class="lg:col-span-3">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Coding Blocks Palette -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+                        <h2 class="text-2xl font-bold text-purple-700 mb-6">🎨 Magic Spell Blocks</h2>
+                        
+                        <div class="space-y-4">
+                            <!-- Movement Blocks -->
+                            <div class="block-category">
+                                <h3 class="text-lg font-semibold text-purple-600 mb-3">Movement Spells</h3>
+                                <div class="space-y-2">
+                                    <div class="drag-block bg-gradient-to-r from-blue-400 to-blue-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="move">
+                                        <span class="text-xl">➡️</span>
+                                        <span class="font-semibold">Move Right</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-blue-400 to-blue-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="move">
+                                        <span class="text-xl">⬅️</span>
+                                        <span class="font-semibold">Move Left</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-blue-400 to-blue-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="move">
+                                        <span class="text-xl">⬆️</span>
+                                        <span class="font-semibold">Move Up</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-blue-400 to-blue-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="move">
+                                        <span class="text-xl">⬇️</span>
+                                        <span class="font-semibold">Move Down</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Blocks -->
+                            <div class="block-category">
+                                <h3 class="text-lg font-semibold text-purple-600 mb-3">Action Spells</h3>
+                                <div class="space-y-2">
+                                    <div class="drag-block bg-gradient-to-r from-green-400 to-green-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="action">
+                                        <span class="text-xl">✨</span>
+                                        <span class="font-semibold">Cast Sparkle</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-green-400 to-green-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="action">
+                                        <span class="text-xl">🔮</span>
+                                        <span class="font-semibold">Magic Orb</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-green-400 to-green-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="action">
+                                        <span class="text-xl">🌟</span>
+                                        <span class="font-semibold">Star Burst</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Control Blocks -->
+                            <div class="block-category">
+                                <h3 class="text-lg font-semibold text-purple-600 mb-3">Control Spells</h3>
+                                <div class="space-y-2">
+                                    <div class="drag-block bg-gradient-to-r from-orange-400 to-orange-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="control">
+                                        <span class="text-xl">🔄</span>
+                                        <span class="font-semibold">Repeat 3 times</span>
+                                    </div>
+                                    <div class="drag-block bg-gradient-to-r from-orange-400 to-orange-500 text-white p-3 rounded-lg flex items-center space-x-3" draggable="true" data-block-type="control">
+                                        <span class="text-xl">⏱️</span>
+                                        <span class="font-semibold">Wait 1 second</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Canvas -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-purple-700">🧙‍♂️ Spell Canvas</h2>
+                            <div class="flex space-x-2">
+                                <button id="run-code" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all">
+                                    ▶️ Cast Spell
+                                </button>
+                                <button id="clear-code" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all">
+                                    🗑️ Clear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="code-canvas" class="code-canvas min-h-96 p-4 border-2 border-dashed border-purple-300 rounded-xl">
+                            <div class="text-center text-purple-400 py-8">
+                                <span class="text-4xl block mb-2">🎯</span>
+                                <p class="text-lg">Drag spell blocks here to create your magic!</p>
+                                <p class="text-sm mt-2">Start with a movement spell to make the wizard move</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="spell-sequence" id="spellSequence" style="display: none;">
-                    <!-- Spell blocks will be added here -->
+
+                <!-- Magic Stage -->
+                <div class="mt-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-purple-700 mb-6">🎭 Magic Stage</h2>
+                    
+                    <div id="magic-stage" class="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 rounded-xl h-64 overflow-hidden">
+                        <!-- Stars background -->
+                        <div class="absolute inset-0">
+                            <div class="absolute top-4 left-8 w-1 h-1 bg-white rounded-full sparkle"></div>
+                            <div class="absolute top-12 right-12 w-1 h-1 bg-white rounded-full sparkle" style="animation-delay: 0.5s;"></div>
+                            <div class="absolute bottom-8 left-16 w-1 h-1 bg-white rounded-full sparkle" style="animation-delay: 1s;"></div>
+                            <div class="absolute bottom-16 right-8 w-1 h-1 bg-white rounded-full sparkle" style="animation-delay: 1.5s;"></div>
+                        </div>
+                        
+                        <!-- Wizard Character -->
+                        <div id="wizard" class="absolute bottom-4 left-4 text-4xl transition-all duration-500 float">
+                            🧙‍♂️
+                        </div>
+                        
+                        <!-- Magic Effects Container -->
+                        <div id="magic-effects" class="absolute inset-0 pointer-events-none"></div>
+                        
+                        <!-- Stage Controls -->
+                        <div class="absolute top-4 right-4 flex space-x-2">
+                            <button id="reset-stage" class="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm hover:bg-white/30 transition-all">
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-purple-600">⭐</span>
+                                <span class="text-purple-700 font-semibold">Magic Points: <span id="magic-points">0</span></span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-pink-600">🏆</span>
+                                <span class="text-pink-700 font-semibold">Achievements: <span id="achievements">0</span></span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            Complete the lesson to unlock the next magical adventure!
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="character-stage">
-            <div class="stage-title">🧙‍♂️ Wizard Stage</div>
-            <div class="character" id="wizard">🧙‍♂️</div>
-            
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                Lesson Progress: <span id="progressText">0%</span>
-            </div>
-
-            <div style="margin-top: 20px;">
-                <div class="achievement-badge">🎯 First Steps</div>
-                <div class="achievement-badge" style="opacity: 0.3;">✨ Spell Master</div>
-                <div class="achievement-badge" style="opacity: 0.3;">🏆 Wizard Graduate</div>
-            </div>
-
-            <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                <div>🎯 Goal: Make the wizard move 3 steps!</div>
-                <div style="margin-top: 5px;">Steps taken: <span id="stepCount">0</span>/3</div>
             </div>
         </div>
     </div>
 
-    <!-- Professor Sparkle Integration -->
-    <script src="/static/js/sparkle_integration.js"></script>
-    
+    <!-- Professor Sparkle Modal -->
+    <div id="sparkle-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <span class="text-white text-2xl">✨</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-purple-700">Professor Sparkle</h2>
+                    <p class="text-purple-600">Your Magical Coding Tutor</p>
+                </div>
+                <button id="close-sparkle" class="ml-auto text-gray-400 hover:text-gray-600">
+                    <span class="text-2xl">×</span>
+                </button>
+            </div>
+            
+            <div id="sparkle-chat" class="bg-purple-50 rounded-xl p-4 h-64 overflow-y-auto mb-4">
+                <div class="sparkle-message bg-white rounded-lg p-3 mb-3">
+                    <p class="text-purple-700">✨ Hello there, young wizard! I'm Professor Sparkle, and I'm here to help you learn the magical art of coding! What would you like to know about today's lesson?</p>
+                </div>
+            </div>
+            
+            <div class="flex space-x-2">
+                <input id="sparkle-input" type="text" placeholder="Ask Professor Sparkle anything..." class="flex-1 px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <button id="send-sparkle" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">
+                    Send ✨
+                </button>
+            </div>
+            
+            <div class="mt-4 flex justify-center">
+                <button id="voice-sparkle" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all">
+                    🎤 Talk to Professor Sparkle
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let spellSequence = [];
-        let isRunning = false;
-        let stepCount = 0;
-        let progress = 0;
+        // Drag and Drop Functionality
+        let draggedElement = null;
+        let codeBlocks = [];
         
-        // Child profile for Professor Sparkle
-        window.childProfile = {
-            id: 'child_' + Date.now(),
-            name: 'Emma', // This would come from the session
-            age: 6,
-            tier: 'magic_workshop'
-        };
-
-        // Drag and Drop functionality
+        // Initialize drag and drop
         document.addEventListener('DOMContentLoaded', function() {
-            const spellBlocks = document.querySelectorAll('.spell-block');
-            const dropZone = document.getElementById('dropZone');
-            const spellSequenceDiv = document.getElementById('spellSequence');
-
-            spellBlocks.forEach(block => {
-                block.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/plain', this.dataset.spell);
-                    e.dataTransfer.setData('text/html', this.outerHTML);
-                });
-            });
-
-            dropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.classList.add('drag-over');
-            });
-
-            dropZone.addEventListener('dragleave', function(e) {
-                this.classList.remove('drag-over');
-            });
-
-            dropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('drag-over');
-                
-                const spellType = e.dataTransfer.getData('text/plain');
-                const spellHTML = e.dataTransfer.getData('text/html');
-                
-                addSpellToSequence(spellType, spellHTML);
-            });
+            initializeDragAndDrop();
+            initializeProfessorSparkle();
+            initializeMagicStage();
         });
-
-        function addSpellToSequence(spellType, spellHTML) {
-            spellSequence.push(spellType);
+        
+        function initializeDragAndDrop() {
+            const dragBlocks = document.querySelectorAll('.drag-block');
+            const codeCanvas = document.getElementById('code-canvas');
             
-            const spellSequenceDiv = document.getElementById('spellSequence');
-            const dropZone = document.getElementById('dropZone');
+            dragBlocks.forEach(block => {
+                block.addEventListener('dragstart', handleDragStart);
+                block.addEventListener('dragend', handleDragEnd);
+            });
             
-            // Create a sequence block
-            const sequenceBlock = document.createElement('div');
-            sequenceBlock.className = 'sequence-block';
-            sequenceBlock.innerHTML = getSpellText(spellType);
-            sequenceBlock.onclick = function() {
-                removeSpellFromSequence(this, spellType);
-            };
+            codeCanvas.addEventListener('dragover', handleDragOver);
+            codeCanvas.addEventListener('drop', handleDrop);
+        }
+        
+        function handleDragStart(e) {
+            draggedElement = e.target.cloneNode(true);
+            e.target.classList.add('dragging');
+        }
+        
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
             
-            spellSequenceDiv.appendChild(sequenceBlock);
-            spellSequenceDiv.style.display = 'block';
-            
-            // Update drop zone message
-            if (spellSequence.length === 1) {
-                dropZone.innerHTML = '<p>🎉 Great! Add more spells or click "Cast Spells" to run your sequence!</p>';
+            if (draggedElement) {
+                const canvas = document.getElementById('code-canvas');
+                
+                // Clear placeholder text if this is the first block
+                if (codeBlocks.length === 0) {
+                    canvas.innerHTML = '';
+                }
+                
+                // Create a container for the dropped block
+                const blockContainer = document.createElement('div');
+                blockContainer.className = 'mb-2 relative group';
+                
+                // Add the block
+                draggedElement.classList.remove('dragging');
+                draggedElement.classList.add('mb-0');
+                draggedElement.draggable = false;
+                
+                // Add delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '×';
+                deleteBtn.className = 'absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-sm opacity-0 group-hover:opacity-100 transition-opacity';
+                deleteBtn.onclick = () => {
+                    blockContainer.remove();
+                    updateCodeBlocks();
+                };
+                
+                blockContainer.appendChild(draggedElement);
+                blockContainer.appendChild(deleteBtn);
+                canvas.appendChild(blockContainer);
+                
+                updateCodeBlocks();
+                draggedElement = null;
+            }
+        }
+        
+        function updateCodeBlocks() {
+            const canvas = document.getElementById('code-canvas');
+            codeBlocks = Array.from(canvas.querySelectorAll('.drag-block')).map(block => {
+                return {
+                    type: block.dataset.blockType,
+                    text: block.textContent.trim()
+                };
+            });
+        }
+        
+        // Code Execution
+        document.getElementById('run-code').addEventListener('click', executeCode);
+        document.getElementById('clear-code').addEventListener('click', clearCode);
+        document.getElementById('reset-stage').addEventListener('click', resetStage);
+        
+        function executeCode() {
+            if (codeBlocks.length === 0) {
+                showSparkleMessage("✨ You need to add some spell blocks first! Try dragging a movement spell to the canvas.");
+                return;
             }
             
-            // Show floating hearts for encouragement
-            showFloatingHearts();
-        }
-
-        function getSpellText(spellType) {
-            const spellTexts = {
-                'move-forward': '🚶 Move Forward',
-                'turn-left': '↺ Turn Left',
-                'turn-right': '↻ Turn Right',
-                'cast-sparkles': '✨ Cast Sparkles',
-                'say-hello': '💬 Say Hello',
-                'dance': '💃 Dance',
-                'repeat': '🔄 Repeat 3 times',
-                'if-then': '🤔 If... Then...'
-            };
-            return spellTexts[spellType] || spellType;
-        }
-
-        function removeSpellFromSequence(element, spellType) {
-            const index = Array.from(element.parentNode.children).indexOf(element);
-            spellSequence.splice(index, 1);
-            element.remove();
-            
-            if (spellSequence.length === 0) {
-                document.getElementById('spellSequence').style.display = 'none';
-                document.getElementById('dropZone').innerHTML = '<p>🎯 Drag spell blocks here to create your magic sequence!</p><p style="font-size: 12px; margin-top: 10px;">Try dragging "Move Forward" to make the wizard walk!</p>';
-            }
-        }
-
-        function runSpells() {
-            if (isRunning || spellSequence.length === 0) return;
-            
-            isRunning = true;
             const wizard = document.getElementById('wizard');
-            
+            let currentX = 16; // Starting position (left-4 = 16px)
+            let currentY = 16; // Starting position (bottom-4 = 16px)
             let delay = 0;
-            spellSequence.forEach((spell, index) => {
+            
+            codeBlocks.forEach((block, index) => {
                 setTimeout(() => {
-                    executeSpell(spell, wizard);
+                    executeBlock(block, wizard, currentX, currentY);
                     
-                    if (index === spellSequence.length - 1) {
+                    // Update position for movement blocks
+                    if (block.type === 'move') {
+                        if (block.text.includes('Right')) currentX += 40;
+                        if (block.text.includes('Left')) currentX -= 40;
+                        if (block.text.includes('Up')) currentY -= 40;
+                        if (block.text.includes('Down')) currentY += 40;
+                        
+                        // Keep wizard within bounds
+                        currentX = Math.max(16, Math.min(currentX, 400));
+                        currentY = Math.max(16, Math.min(currentY, 200));
+                        
+                        wizard.style.left = currentX + 'px';
+                        wizard.style.bottom = currentY + 'px';
+                    }
+                    
+                    // Award points
+                    awardMagicPoints(10);
+                    
+                    // Check for lesson completion
+                    if (index === codeBlocks.length - 1) {
                         setTimeout(() => {
-                            isRunning = false;
                             checkLessonCompletion();
-                        }, 1000);
+                        }, 500);
                     }
                 }, delay);
-                delay += 1500;
+                
+                delay += 1000; // 1 second between each block execution
             });
         }
-
-        function executeSpell(spell, wizard) {
-            switch(spell) {
-                case 'move-forward':
-                    wizard.classList.add('moving');
-                    stepCount++;
-                    updateStepCount();
-                    setTimeout(() => wizard.classList.remove('moving'), 1000);
+        
+        function executeBlock(block, wizard, x, y) {
+            const magicEffects = document.getElementById('magic-effects');
+            
+            switch (block.type) {
+                case 'action':
+                    createMagicEffect(block.text, x, y);
                     break;
-                case 'cast-sparkles':
-                    wizard.classList.add('sparkle');
-                    setTimeout(() => wizard.classList.remove('sparkle'), 1000);
-                    break;
-                case 'say-hello':
-                    showMessage('Hello! 👋');
-                    break;
-                case 'dance':
-                    wizard.style.animation = 'sparkle 0.5s ease-in-out 3';
-                    setTimeout(() => wizard.style.animation = '', 1500);
+                case 'control':
+                    if (block.text.includes('Wait')) {
+                        // Wait is handled by the delay system
+                    }
                     break;
             }
         }
-
-        function stopSpells() {
-            isRunning = false;
-            const wizard = document.getElementById('wizard');
-            wizard.classList.remove('moving', 'sparkle');
-            wizard.style.animation = '';
-        }
-
-        function clearSpells() {
-            spellSequence = [];
-            document.getElementById('spellSequence').innerHTML = '';
-            document.getElementById('spellSequence').style.display = 'none';
-            document.getElementById('dropZone').innerHTML = '<p>🎯 Drag spell blocks here to create your magic sequence!</p><p style="font-size: 12px; margin-top: 10px;">Try dragging "Move Forward" to make the wizard walk!</p>';
-            stepCount = 0;
-            updateStepCount();
-        }
-
-        function updateStepCount() {
-            document.getElementById('stepCount').textContent = stepCount;
-            progress = Math.min((stepCount / 3) * 100, 100);
-            document.getElementById('progressFill').style.width = progress + '%';
-            document.getElementById('progressText').textContent = Math.round(progress) + '%';
-        }
-
-        function checkLessonCompletion() {
-            if (stepCount >= 3) {
-                showMessage('🎉 Congratulations! You completed the lesson!');
-                // Unlock next achievement
-                const achievements = document.querySelectorAll('.achievement-badge');
-                if (achievements[1]) {
-                    achievements[1].style.opacity = '1';
-                }
+        
+        function createMagicEffect(effectType, x, y) {
+            const magicEffects = document.getElementById('magic-effects');
+            const effect = document.createElement('div');
+            effect.className = 'absolute text-2xl pointer-events-none';
+            effect.style.left = (x + 20) + 'px';
+            effect.style.bottom = (y + 20) + 'px';
+            
+            if (effectType.includes('Sparkle')) {
+                effect.innerHTML = '✨';
+                effect.className += ' sparkle';
+            } else if (effectType.includes('Orb')) {
+                effect.innerHTML = '🔮';
+                effect.className += ' float';
+            } else if (effectType.includes('Star')) {
+                effect.innerHTML = '🌟';
+                effect.className += ' sparkle';
             }
-        }
-
-        function showMessage(message) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                padding: 20px;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                font-size: 18px;
-                z-index: 1000;
-                text-align: center;
-            `;
-            messageDiv.innerHTML = message;
-            document.body.appendChild(messageDiv);
             
-            setTimeout(() => {
-                document.body.removeChild(messageDiv);
-            }, 3000);
-        }
-
-        function showFloatingHearts() {
-            const hearts = document.createElement('div');
-            hearts.className = 'floating-hearts';
-            hearts.innerHTML = '💖';
-            document.querySelector('.canvas-area').appendChild(hearts);
+            magicEffects.appendChild(effect);
             
+            // Remove effect after animation
             setTimeout(() => {
-                hearts.remove();
+                effect.remove();
             }, 2000);
         }
-
-        function goToDashboard() {
-            window.location.href = '/dashboard';
+        
+        function clearCode() {
+            const canvas = document.getElementById('code-canvas');
+            canvas.innerHTML = `
+                <div class="text-center text-purple-400 py-8">
+                    <span class="text-4xl block mb-2">🎯</span>
+                    <p class="text-lg">Drag spell blocks here to create your magic!</p>
+                    <p class="text-sm mt-2">Start with a movement spell to make the wizard move</p>
+                </div>
+            `;
+            codeBlocks = [];
         }
-
-        // Initialize with child name from URL or session
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const childName = urlParams.get('child') || 'Young Wizard';
-            document.getElementById('childName').textContent = childName;
-        });
+        
+        function resetStage() {
+            const wizard = document.getElementById('wizard');
+            const magicEffects = document.getElementById('magic-effects');
+            
+            wizard.style.left = '16px';
+            wizard.style.bottom = '16px';
+            magicEffects.innerHTML = '';
+        }
+        
+        function awardMagicPoints(points) {
+            const magicPointsEl = document.getElementById('magic-points');
+            const currentPoints = parseInt(magicPointsEl.textContent);
+            magicPointsEl.textContent = currentPoints + points;
+        }
+        
+        function checkLessonCompletion() {
+            if (codeBlocks.length >= 3) {
+                showSparkleMessage("🎉 Fantastic! You've completed your first magical spell! You're ready for the next lesson!");
+                awardMagicPoints(50);
+                
+                // Update achievements
+                const achievementsEl = document.getElementById('achievements');
+                achievementsEl.textContent = parseInt(achievementsEl.textContent) + 1;
+                
+                // Unlock next lesson (visual feedback)
+                setTimeout(() => {
+                    const nextLesson = document.querySelector('[data-lesson="2"]');
+                    if (nextLesson) {
+                        nextLesson.classList.remove('bg-gray-100', 'text-gray-600');
+                        nextLesson.classList.add('bg-gradient-to-r', 'from-purple-400', 'to-pink-400', 'text-white');
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Professor Sparkle Integration
+        function initializeProfessorSparkle() {
+            const sparkleBtn = document.getElementById('sparkle-btn');
+            const sparkleModal = document.getElementById('sparkle-modal');
+            const closeSparkle = document.getElementById('close-sparkle');
+            const sendSparkle = document.getElementById('send-sparkle');
+            const sparkleInput = document.getElementById('sparkle-input');
+            const voiceSparkle = document.getElementById('voice-sparkle');
+            
+            sparkleBtn.addEventListener('click', () => {
+                sparkleModal.classList.remove('hidden');
+            });
+            
+            closeSparkle.addEventListener('click', () => {
+                sparkleModal.classList.add('hidden');
+            });
+            
+            sendSparkle.addEventListener('click', sendMessageToSparkle);
+            sparkleInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessageToSparkle();
+                }
+            });
+            
+            voiceSparkle.addEventListener('click', startVoiceChat);
+        }
+        
+        function sendMessageToSparkle() {
+            const input = document.getElementById('sparkle-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage(message, 'user');
+                input.value = '';
+                
+                // Simulate Professor Sparkle response
+                setTimeout(() => {
+                    const response = generateSparkleResponse(message);
+                    addChatMessage(response, 'sparkle');
+                }, 1000);
+            }
+        }
+        
+        function addChatMessage(message, sender) {
+            const chat = document.getElementById('sparkle-chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `sparkle-message ${sender === 'user' ? 'bg-purple-100 ml-8' : 'bg-white mr-8'} rounded-lg p-3 mb-3`;
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `<p class="text-purple-800">${message}</p>`;
+            } else {
+                messageDiv.innerHTML = `<p class="text-purple-700">✨ ${message}</p>`;
+            }
+            
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        function generateSparkleResponse(message) {
+            const responses = [
+                "That's a wonderful question! In the Magic Workshop, we use visual blocks to create spells. Try dragging a movement block to make the wizard move!",
+                "Great thinking! Remember, coding is like casting spells - you need to put the right blocks in the right order to make magic happen!",
+                "I love your curiosity! Each block represents a different type of magic. Movement blocks make things move, action blocks create effects, and control blocks help you repeat spells!",
+                "Excellent! You're learning the fundamental concepts of programming through magic. Keep experimenting with different combinations of blocks!",
+                "That's the spirit of a true wizard! Don't be afraid to try different combinations - that's how we discover new magical possibilities!"
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        function startVoiceChat() {
+            // Placeholder for voice integration
+            showSparkleMessage("🎤 Voice chat with Professor Sparkle is coming soon! For now, you can type your questions and I'll help you learn magic coding!");
+        }
+        
+        function showSparkleMessage(message) {
+            const sparkleModal = document.getElementById('sparkle-modal');
+            sparkleModal.classList.remove('hidden');
+            addChatMessage(message, 'sparkle');
+        }
+        
+        function initializeMagicStage() {
+            // Add some initial sparkle effects
+            setTimeout(() => {
+                createRandomSparkles();
+            }, 2000);
+        }
+        
+        function createRandomSparkles() {
+            const stage = document.getElementById('magic-stage');
+            const sparkle = document.createElement('div');
+            sparkle.className = 'absolute text-yellow-300 text-sm sparkle';
+            sparkle.innerHTML = '✨';
+            sparkle.style.left = Math.random() * 300 + 'px';
+            sparkle.style.top = Math.random() * 200 + 'px';
+            
+            stage.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+            
+            // Create more sparkles randomly
+            setTimeout(createRandomSparkles, Math.random() * 5000 + 3000);
+        }
     </script>
 </body>
 </html>
-
