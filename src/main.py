@@ -463,7 +463,7 @@ def signup():
     token = jwt.encode({
         'user_id': user['id'],
         'email': email,
-        'exp': datetime.utcnow() + timedelta(days=30)
+        'exp': datetime.now() + timedelta(days=30)
     }, app.secret_key, algorithm='HS256')
     
     # Create response and set cookie
@@ -556,7 +556,7 @@ def signin():
         token = jwt.encode({
             'user_id': user['id'],
             'email': email,
-            'exp': datetime.utcnow() + timedelta(days=30)
+            'exp': datetime.now() + timedelta(days=30)
         }, app.secret_key, algorithm='HS256')
         
         # Create response and set cookie
