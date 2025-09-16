@@ -479,9 +479,7 @@ def signup():
         
     except Exception as e:
         print(f"Signup error: {e}")
-        return f"Signup failed: {str(e)}", 500)
-    
-    return response
+        return f"Signup failed: {str(e)}", 500
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
