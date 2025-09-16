@@ -1,23 +1,25 @@
-from flask import Flask, send_from_directory, send_file, jsonify, request, make_response, redirect, url_for
+from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for, send_file
 import os
-from auth_service import SupabaseAuthService
-from professor_sparkle import ProfessorSparkle, create_sparkle_routes
+import json
+from datetime import datetime, timedelta
+import jwt
+import bcrypt
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-production')
 
-# Initialize Supabase Auth Service
-auth_service = SupabaseAuthService()
+# In-memory user storage (replace with database in production)
+users_db = {}
+children_db = {}
 
-def find_file(relative_path):
-    """Find file in multiple possible locations with detailed logging"""
+def get_file_path(relative_path):
+    """Find file in multiple possible locations"""
     possible_paths = [
         relative_path,
-        os.path.join('src', relative_path),
-        os.path.join('/src', relative_path),
-        os.path.join(os.getcwd(), relative_path),
-        os.path.join(os.path.dirname(__file__), relative_path),
-        os.path.join(os.path.dirname(__file__), '..', relative_path)
+        os.path.join('.next', 'server', 'app', relative_path),
+        os.path.join('src', '.next', 'server', 'app', relative_path),
+        os.path.join('/src', '.next', 'server', 'app', relative_path),
+        os.path.join(os.getcwd(), '.next', 'server', 'app', relative_path)
     ]
     
     for path in possible_paths:
@@ -25,630 +27,1072 @@ def find_file(relative_path):
             return path
     return None
 
-def find_directory(relative_path):
-    """Find directory in multiple possible locations"""
-    possible_paths = [
-        relative_path,
-        os.path.join('src', relative_path),
-        os.path.join('/src', relative_path),
-        os.path.join(os.getcwd(), relative_path),
-        os.path.join(os.path.dirname(__file__), relative_path),
-        os.path.join(os.path.dirname(__file__), '..', relative_path)
-    ]
-    
-    for path in possible_paths:
-        if os.path.exists(path) and os.path.isdir(path):
-            return path
-    return None
+def create_jwt_token(user_id):
+    """Create JWT token for user"""
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, app.secret_key, algorithm='HS256')
 
-def get_current_user():
-    """Get current user from session token"""
-    token = request.cookies.get('session_token')
-    if not token:
+def verify_jwt_token(token):
+    """Verify JWT token"""
+    try:
+        payload = jwt.decode(token, app.secret_key, algorithms=['HS256'])
+        return payload['user_id']
+    except jwt.ExpiredSignatureError:
         return None
-    
-    result = auth_service.verify_session_token(token)
-    if result['success']:
-        user_data = auth_service.get_user_with_children(result['user_id'])
-        if user_data['success']:
-            return {
-                'id': result['user_id'],
-                'profile': user_data['profile'],
-                'children': user_data['children']
-            }
-    return None
+    except jwt.InvalidTokenError:
+        return None
+
+def get_tier_from_age(age):
+    """Determine learning tier based on age"""
+    if age <= 7:
+        return "Magic Workshop"
+    elif age <= 12:
+        return "Innovation Lab"
+    else:
+        return "Professional Studio"
 
 @app.route('/')
 def index():
-    file_path = find_file('.next/server/app/index.html')
-    if file_path:
-        return send_file(file_path)
-    
-    # Check if user is logged in
-    user = get_current_user()
-    if user:
-        return redirect('/dashboard')
-    
-    # Fallback: serve a basic HTML page if Next.js files not found
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Codopia - Code Your Future, Change Your World</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-            .container { text-align: center; max-width: 600px; }
-            h1 { font-size: 3em; margin-bottom: 20px; }
-            p { font-size: 1.2em; margin-bottom: 30px; }
-            .btn { background: white; color: #667eea; padding: 15px 30px; border: none; border-radius: 25px; font-size: 1.1em; cursor: pointer; text-decoration: none; display: inline-block; margin: 10px; }
-            .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-            .features { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-            .feature { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🚀 Codopia</h1>
-            <p>Where Code Becomes Craft</p>
-            <p>A comprehensive coding education platform for children ages 5-10.</p>
-            <div>
-                <a href="/auth/signin" class="btn">Sign In</a>
-                <a href="/auth/signup" class="btn">Start Free Trial</a>
-            </div>
-            
-            <div class="features">
-                <div class="feature">
-                    <h3>🎨 Magic Workshop</h3>
-                    <p>Ages 5-7: Visual block coding with magical themes</p>
+    """Landing page with beautiful design"""
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codopia - Where Code Becomes Craft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float { animation: float 6s ease-in-out infinite; }
+        .sparkle {
+            animation: sparkle 2s linear infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">C</span>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Codopia</span>
                 </div>
-                <div class="feature">
-                    <h3>🔬 Innovation Lab</h3>
-                    <p>Ages 8-12: Advanced blocks and app building</p>
-                </div>
-                <div class="feature">
-                    <h3>💼 Professional Studio</h3>
-                    <p>Ages 13+: Real programming languages</p>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-purple-600 transition-colors">Features</a>
+                    <a href="#tiers" class="text-gray-700 hover:text-purple-600 transition-colors">Learning Tiers</a>
+                    <a href="#about" class="text-gray-700 hover:text-purple-600 transition-colors">About</a>
+                    <a href="/signin" class="text-purple-600 hover:text-purple-700 font-semibold">Sign In</a>
+                    <a href="/signup" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all">Start Free Trial</a>
                 </div>
             </div>
         </div>
-    </body>
-    </html>
-    ''', 200, {'Content-Type': 'text/html'}
+    </nav>
 
-@app.route('/auth/signin', methods=['GET', 'POST'])
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden py-20">
+        <!-- Floating Sparkles -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="sparkle absolute top-20 left-10 w-4 h-4 bg-purple-400 rounded-full"></div>
+            <div class="sparkle absolute top-40 right-20 w-3 h-3 bg-blue-400 rounded-full" style="animation-delay: 0.5s;"></div>
+            <div class="sparkle absolute bottom-40 left-20 w-2 h-2 bg-pink-400 rounded-full" style="animation-delay: 1s;"></div>
+            <div class="sparkle absolute bottom-20 right-10 w-3 h-3 bg-cyan-400 rounded-full" style="animation-delay: 1.5s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-8">
+                    <div class="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+                        🔥 URGENT: Only 91 Beta Spots Left - Filling Fast!
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-6xl font-bold leading-tight">
+                        Your Child's
+                        <span class="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent block">
+                            Coding Adventure
+                        </span>
+                        Starts Here
+                    </h1>
+                    
+                    <p class="text-xl text-gray-600 leading-relaxed">
+                        <span class="text-purple-600 font-semibold">Don't let your child fall behind</span> in the digital revolution. Transform 
+                        them into a confident programmer through magical adventures, real 
+                        app building, and professional development skills.
+                    </p>
+
+                    <div class="flex flex-wrap gap-4 text-sm">
+                        <div class="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-green-700 font-medium">Ages 3-18</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-full">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-blue-700 font-medium">100% Safe</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-purple-50 px-3 py-2 rounded-full">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-purple-700 font-medium">Irresistibly Fun</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div class="flex -space-x-2">
+                            <div class="w-10 h-10 bg-purple-400 rounded-full border-2 border-white"></div>
+                            <div class="w-10 h-10 bg-blue-400 rounded-full border-2 border-white"></div>
+                            <div class="w-10 h-10 bg-pink-400 rounded-full border-2 border-white"></div>
+                            <div class="w-10 h-10 bg-cyan-400 rounded-full border-2 border-white"></div>
+                            <div class="w-10 h-10 bg-green-400 rounded-full border-2 border-white"></div>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-1">
+                                <span class="text-yellow-400">★★★★★</span>
+                                <span class="font-semibold">4.9/5 rating</span>
+                            </div>
+                            <p class="text-sm text-gray-600">From real parents</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-8 text-white float">
+                        <div class="text-center space-y-6">
+                            <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                                <span class="text-3xl">✨</span>
+                            </div>
+                            <h3 class="text-2xl font-bold">Join Codopia NOW</h3>
+                            <p class="text-purple-100">Be among the first 99 families to experience the future of coding education by Requesting Early Access Now. DON'T LET YOUR CHILD FALL BEHIND</p>
+                            
+                            <div class="bg-white/10 rounded-lg p-4 text-center">
+                                <p class="text-sm text-purple-200 mb-2">🔴 LIVE: Join the first wave of beta testers!</p>
+                                <div class="text-3xl font-bold">91</div>
+                                <p class="text-sm">Beta spots remaining</p>
+                            </div>
+
+                            <form class="space-y-4" action="/signup" method="GET">
+                                <input 
+                                    type="email" 
+                                    placeholder="Parent Email Address"
+                                    class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500"
+                                    required
+                                />
+                                <select class="w-full px-4 py-3 rounded-lg text-gray-800">
+                                    <option>Select age to unlock their perfect tier...</option>
+                                    <option value="3">3 years old</option>
+                                    <option value="4">4 years old</option>
+                                    <option value="5">5 years old</option>
+                                    <option value="6">6 years old</option>
+                                    <option value="7">7 years old</option>
+                                    <option value="8">8 years old</option>
+                                    <option value="9">9 years old</option>
+                                    <option value="10">10 years old</option>
+                                    <option value="11">11 years old</option>
+                                    <option value="12">12 years old</option>
+                                    <option value="13">13 years old</option>
+                                    <option value="14">14 years old</option>
+                                    <option value="15">15 years old</option>
+                                    <option value="16">16 years old</option>
+                                    <option value="17">17 years old</option>
+                                    <option value="18">18 years old</option>
+                                </select>
+                                <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg transition-colors">
+                                    🔒 SECURE MY CHILD'S FUTURE - FREE TRIAL
+                                </button>
+                            </form>
+
+                            <div class="flex items-center justify-center space-x-4 text-xs text-purple-200">
+                                <span>🔒 Your information is encrypted and will never be shared</span>
+                            </div>
+                            <div class="flex items-center justify-center space-x-4 text-xs text-purple-200">
+                                <span>⚡ Instant Access</span>
+                                <span>🚫 No Commitment</span>
+                                <span>❌ Cancel Anytime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Three Tiers Section -->
+    <section id="tiers" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Three Magical Tiers That <span class="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Grow With Your Child</span></h2>
+                <p class="text-xl text-gray-600">From magical adventures to professional development, each tier is scientifically designed for your child's cognitive development stage</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Magic Workshop -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">🎨</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-purple-700">Magic Workshop</h3>
+                        <p class="text-purple-600">Ages 3-7 • Ready for Magic Workshop</p>
+                    </div>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-center"><span class="text-purple-500 mr-2">✨</span> Visual drag-and-drop coding</li>
+                        <li class="flex items-center"><span class="text-purple-500 mr-2">🧙‍♂️</span> Magical story adventures</li>
+                        <li class="flex items-center"><span class="text-purple-500 mr-2">🎮</span> Interactive spell casting</li>
+                        <li class="flex items-center"><span class="text-purple-500 mr-2">🏆</span> Achievement badges</li>
+                    </ul>
+                </div>
+
+                <!-- Innovation Lab -->
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-200">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">🔬</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-blue-700">Innovation Lab</h3>
+                        <p class="text-blue-600">Ages 8-12 • Ready for Innovation Lab</p>
+                    </div>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-center"><span class="text-blue-500 mr-2">📱</span> Real app development</li>
+                        <li class="flex items-center"><span class="text-blue-500 mr-2">🤖</span> Robot programming</li>
+                        <li class="flex items-center"><span class="text-blue-500 mr-2">🎯</span> Problem-solving challenges</li>
+                        <li class="flex items-center"><span class="text-blue-500 mr-2">👥</span> Collaborative projects</li>
+                    </ul>
+                </div>
+
+                <!-- Professional Studio -->
+                <div class="bg-gradient-to-br from-gray-50 to-slate-50 rounded-2xl p-8 border border-gray-200">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-gray-600 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">💼</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-700">Professional Studio</h3>
+                        <p class="text-gray-600">Ages 13-18 • Ready for Professional Studio</p>
+                    </div>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-center"><span class="text-gray-500 mr-2">💻</span> Real programming languages</li>
+                        <li class="flex items-center"><span class="text-gray-500 mr-2">🌐</span> Web development</li>
+                        <li class="flex items-center"><span class="text-gray-500 mr-2">🤖</span> AI & Machine Learning</li>
+                        <li class="flex items-center"><span class="text-gray-500 mr-2">🚀</span> Career preparation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Warning Section -->
+    <section class="py-16 bg-gradient-to-r from-orange-500 to-red-500 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="mb-6">
+                <span class="text-6xl">⚠️</span>
+            </div>
+            <h2 class="text-3xl font-bold mb-4">Warning: Software developer salaries average $107,000+. Children who start coding early have a 300% advantage in future earnings.</h2>
+            <div class="bg-red-600 rounded-lg p-6 mt-8">
+                <p class="text-xl font-semibold">⏰ URGENT: Only 91 Beta Spots Remaining</p>
+                <p class="text-red-200 mt-2">⚠️ Spots are filling every few minutes - Don't wait!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">C</span>
+                    </div>
+                    <span class="text-2xl font-bold">Codopia</span>
+                </div>
+                <p class="text-gray-400 mb-6">Where Code Becomes Craft</p>
+                <div class="flex items-center justify-center space-x-6 text-sm text-gray-400">
+                    <span>🔒 COPPA+ Compliant</span>
+                    <span>🛡️ No Credit Card Required</span>
+                    <span>🔐 Parent Approved</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+    ''')
+
+@app.route('/signin')
 def signin():
-    if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form
-        email = data.get('email')
-        password = data.get('password')
-        
-        if not email or not password:
-            return jsonify({"success": False, "error": "Email and password are required"}), 400
-        
-        result = auth_service.sign_in_user(email, password)
-        
-        if result['success']:
-            # Create session token
-            token = auth_service.create_session_token(result['user'].id)
-            
-            response = make_response(jsonify({
-                "success": True,
-                "message": "Signed in successfully",
-                "redirect": "/dashboard"
-            }))
-            response.set_cookie('session_token', token, max_age=7*24*60*60, httponly=True, secure=True)
-            return response
-        else:
-            return jsonify(result), 401
-    
-    # GET request - show signin form
-    file_path = find_file('.next/server/app/auth/signin/index.html')
-    if file_path:
-        return send_file(file_path)
-    
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Sign In - Codopia</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-            .form-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 400px; width: 100%; }
-            h2 { text-align: center; color: #333; margin-bottom: 30px; }
-            .form-group { margin-bottom: 20px; }
-            label { display: block; margin-bottom: 5px; color: #555; }
-            input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
-            .btn { background: #667eea; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; width: 100%; }
-            .btn:hover { background: #5a6fd8; }
-            .btn:disabled { background: #ccc; cursor: not-allowed; }
-            .back-link { text-align: center; margin-top: 20px; }
-            .back-link a { color: #667eea; text-decoration: none; }
-            .error { color: #e74c3c; margin-top: 10px; text-align: center; }
-            .success { color: #27ae60; margin-top: 10px; text-align: center; }
-        </style>
-    </head>
-    <body>
-        <div class="form-container">
-            <h2>Welcome Back to Codopia</h2>
-            <form id="signinForm">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="email" name="email" placeholder="parent@example.com" required>
+    """Sign in page"""
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Codopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <a href="/" class="inline-flex items-center text-gray-600 hover:text-purple-600 mb-6 transition-colors">
+            ← Back to Home
+        </a>
+
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white text-2xl font-bold">C</span>
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    Welcome Back to Codopia
+                </h1>
+                <p class="text-gray-600 mt-2">Sign in to continue your child's coding adventure</p>
+            </div>
+
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p class="text-red-700 text-sm"></p>
+            </div>
+
+            <form id="signin-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email"
+                        placeholder="parent@example.com"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
                 </div>
-                <button type="submit" class="btn" id="submitBtn">Sign In</button>
-                <div id="message"></div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="password"
+                        placeholder="Enter your password"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm text-purple-600 hover:text-purple-700">Forgot password?</a>
+                </div>
+
+                <button 
+                    type="submit" 
+                    id="signin-btn"
+                    class="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all"
+                >
+                    Sign In
+                </button>
             </form>
-            <div class="back-link">
-                <a href="/">← Back to Home</a> | 
-                <a href="/auth/signup">Create Account</a>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account? 
+                    <a href="/signup" class="text-purple-600 hover:text-purple-700 font-semibold">Start Free Trial</a>
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center space-x-6 pt-6 border-t border-gray-100 mt-6">
+                <div class="flex items-center space-x-2 text-xs text-gray-500">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>COPPA Compliant</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs text-gray-500">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>256-bit SSL</span>
+                </div>
             </div>
         </div>
-        
-        <script>
-            document.getElementById('signinForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const submitBtn = document.getElementById('submitBtn');
-                const messageDiv = document.getElementById('message');
-                
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Signing In...';
-                messageDiv.innerHTML = '';
-                
-                const formData = new FormData(this);
-                const data = Object.fromEntries(formData);
-                
-                try {
-                    const response = await fetch('/auth/signin', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        messageDiv.innerHTML = '<div class="success">' + result.message + '</div>';
-                        setTimeout(() => {
-                            window.location.href = result.redirect;
-                        }, 1000);
-                    } else {
-                        messageDiv.innerHTML = '<div class="error">' + result.error + '</div>';
-                    }
-                } catch (error) {
-                    messageDiv.innerHTML = '<div class="error">An error occurred. Please try again.</div>';
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign In';
-                }
-            });
-        </script>
-    </body>
-    </html>
-    ''', 200, {'Content-Type': 'text/html'}
+    </div>
 
-@app.route('/auth/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form
-        email = data.get('email')
-        password = data.get('password')
-        full_name = data.get('full_name')
-        child_name = data.get('child_name')
-        child_age = data.get('child_age')
-        
-        if not all([email, password, full_name, child_name, child_age]):
-            return jsonify({"success": False, "error": "All fields are required"}), 400
-        
-        try:
-            child_age = int(child_age)
-        except ValueError:
-            return jsonify({"success": False, "error": "Invalid age"}), 400
-        
-        # Create user account
-        user_result = auth_service.create_user_account(email, password, full_name)
-        
-        if user_result['success']:
-            # Create child profile
-            child_result = auth_service.create_child_profile(
-                user_result['user'].id, 
-                child_name, 
-                child_age
-            )
+    <script>
+        document.getElementById('signin-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            if child_result['success']:
-                # Create session token
-                token = auth_service.create_session_token(user_result['user'].id)
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('signin-btn');
+            const errorDiv = document.getElementById('error-message');
+            
+            btn.textContent = 'Signing In...';
+            btn.disabled = true;
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
                 
-                response = make_response(jsonify({
-                    "success": True,
-                    "message": f"Account created successfully! {child_name} has been enrolled in {child_result['child']['tier'].replace('_', ' ').title()}.",
-                    "redirect": "/dashboard"
-                }))
-                response.set_cookie('session_token', token, max_age=7*24*60*60, httponly=True, secure=True)
-                return response
-            else:
-                return jsonify({
-                    "success": False,
-                    "error": f"Account created but failed to create child profile: {child_result['error']}"
-                }), 500
-        else:
-            return jsonify(user_result), 400
-    
-    # GET request - show signup form
-    file_path = find_file('.next/server/app/auth/signup/index.html')
-    if file_path:
-        return send_file(file_path)
-    
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Sign Up - Codopia</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-            .form-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 400px; width: 100%; }
-            h2 { text-align: center; color: #333; margin-bottom: 30px; }
-            .form-group { margin-bottom: 20px; }
-            label { display: block; margin-bottom: 5px; color: #555; }
-            input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
-            .btn { background: #667eea; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; width: 100%; }
-            .btn:hover { background: #5a6fd8; }
-            .btn:disabled { background: #ccc; cursor: not-allowed; }
-            .back-link { text-align: center; margin-top: 20px; }
-            .back-link a { color: #667eea; text-decoration: none; }
-            .error { color: #e74c3c; margin-top: 10px; text-align: center; }
-            .success { color: #27ae60; margin-top: 10px; text-align: center; }
-            .tier-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px; border-left: 4px solid #667eea; }
-        </style>
-    </head>
-    <body>
-        <div class="form-container">
-            <h2>Join Codopia Today</h2>
-            <form id="signupForm">
-                <div class="form-group">
-                    <label>Your Full Name</label>
-                    <input type="text" id="full_name" name="full_name" placeholder="Your full name" required>
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorDiv.querySelector('p').textContent = data.error || 'Invalid email or password';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.querySelector('p').textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+    ''')
+
+@app.route('/signup')
+def signup():
+    """Sign up page"""
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Free Trial - Codopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <a href="/" class="inline-flex items-center text-gray-600 hover:text-purple-600 mb-6 transition-colors">
+            ← Back to Home
+        </a>
+
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white text-2xl font-bold">C</span>
                 </div>
-                <div class="form-group">
-                    <label>Parent Email</label>
-                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    Start Your Free Trial
+                </h1>
+                <p class="text-gray-600 mt-2">Create your account and add your child's profile</p>
+            </div>
+
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p class="text-red-700 text-sm"></p>
+            </div>
+
+            <form id="signup-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Parent Full Name</label>
+                    <input 
+                        type="text" 
+                        id="parent-name"
+                        placeholder="John Smith"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" name="password" placeholder="Create a secure password" required>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email"
+                        placeholder="parent@example.com"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
                 </div>
-                <div class="form-group">
-                    <label>Child's Name</label>
-                    <input type="text" id="child_name" name="child_name" placeholder="Your child's name" required>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="password"
+                        placeholder="Create a secure password"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
                 </div>
-                <div class="form-group">
-                    <label>Child's Age</label>
-                    <select id="child_age" name="child_age" required onchange="updateTierInfo()">
-                        <option value="">Select age</option>
-                        <option value="5">5 years old</option>
-                        <option value="6">6 years old</option>
-                        <option value="7">7 years old</option>
-                        <option value="8">8 years old</option>
-                        <option value="9">9 years old</option>
-                        <option value="10">10 years old</option>
-                        <option value="11">11 years old</option>
-                        <option value="12">12 years old</option>
-                        <option value="13">13 years old</option>
-                        <option value="14">14 years old</option>
-                        <option value="15">15 years old</option>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Child's Name</label>
+                    <input 
+                        type="text" 
+                        id="child-name"
+                        placeholder="Emma Smith"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Child's Age (This determines their learning tier)</label>
+                    <select 
+                        id="child-age"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        required
+                    >
+                        <option value="">Select age to unlock their perfect tier...</option>
+                        <option value="3">3 years old → Magic Workshop</option>
+                        <option value="4">4 years old → Magic Workshop</option>
+                        <option value="5">5 years old → Magic Workshop</option>
+                        <option value="6">6 years old → Magic Workshop</option>
+                        <option value="7">7 years old → Magic Workshop</option>
+                        <option value="8">8 years old → Innovation Lab</option>
+                        <option value="9">9 years old → Innovation Lab</option>
+                        <option value="10">10 years old → Innovation Lab</option>
+                        <option value="11">11 years old → Innovation Lab</option>
+                        <option value="12">12 years old → Innovation Lab</option>
+                        <option value="13">13 years old → Professional Studio</option>
+                        <option value="14">14 years old → Professional Studio</option>
+                        <option value="15">15 years old → Professional Studio</option>
+                        <option value="16">16 years old → Professional Studio</option>
+                        <option value="17">17 years old → Professional Studio</option>
+                        <option value="18">18 years old → Professional Studio</option>
                     </select>
                 </div>
-                <div id="tierInfo" class="tier-info" style="display: none;">
-                    <strong>Learning Tier: </strong><span id="tierName"></span><br>
-                    <small id="tierDescription"></small>
-                </div>
-                <button type="submit" class="btn" id="submitBtn">Start Free Trial</button>
-                <div id="message"></div>
+
+                <button 
+                    type="submit" 
+                    id="signup-btn"
+                    class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-all"
+                >
+                    🔒 SECURE MY CHILD'S FUTURE - FREE TRIAL
+                </button>
             </form>
-            <div class="back-link">
-                <a href="/">← Back to Home</a> | 
-                <a href="/auth/signin">Already have an account?</a>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account? 
+                    <a href="/signin" class="text-purple-600 hover:text-purple-700 font-semibold">Sign In</a>
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center space-x-4 text-xs text-gray-500 mt-6">
+                <span>🔒 Your information is encrypted and will never be shared</span>
             </div>
         </div>
-        
-        <script>
-            function updateTierInfo() {
-                const age = parseInt(document.getElementById('child_age').value);
-                const tierInfo = document.getElementById('tierInfo');
-                const tierName = document.getElementById('tierName');
-                const tierDescription = document.getElementById('tierDescription');
-                
-                if (age) {
-                    let tier, description;
-                    if (age <= 7) {
-                        tier = 'Magic Workshop';
-                        description = 'Visual block coding with magical themes and storytelling';
-                    } else if (age <= 12) {
-                        tier = 'Innovation Lab';
-                        description = 'Advanced blocks, app building, and creative projects';
-                    } else {
-                        tier = 'Professional Studio';
-                        description = 'Real programming languages and professional development tools';
-                    }
-                    
-                    tierName.textContent = tier;
-                    tierDescription.textContent = description;
-                    tierInfo.style.display = 'block';
-                } else {
-                    tierInfo.style.display = 'none';
-                }
-            }
+    </div>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            document.getElementById('signupForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
+            const parentName = document.getElementById('parent-name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const childName = document.getElementById('child-name').value;
+            const childAge = parseInt(document.getElementById('child-age').value);
+            const btn = document.getElementById('signup-btn');
+            const errorDiv = document.getElementById('error-message');
+            
+            btn.textContent = 'Creating Account...';
+            btn.disabled = true;
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        parent_name: parentName,
+                        email, 
+                        password,
+                        child_name: childName,
+                        child_age: childAge
+                    })
+                });
                 
-                const submitBtn = document.getElementById('submitBtn');
-                const messageDiv = document.getElementById('message');
+                const data = await response.json();
                 
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating Account...';
-                messageDiv.innerHTML = '';
-                
-                const formData = new FormData(this);
-                const data = Object.fromEntries(formData);
-                
-                try {
-                    const response = await fetch('/auth/signup', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        messageDiv.innerHTML = '<div class="success">' + result.message + '</div>';
-                        setTimeout(() => {
-                            window.location.href = result.redirect;
-                        }, 2000);
-                    } else {
-                        messageDiv.innerHTML = '<div class="error">' + result.error + '</div>';
-                    }
-                } catch (error) {
-                    messageDiv.innerHTML = '<div class="error">An error occurred. Please try again.</div>';
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Start Free Trial';
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorDiv.querySelector('p').textContent = data.error || 'An error occurred during signup';
+                    errorDiv.classList.remove('hidden');
                 }
-            });
-        </script>
-    </body>
-    </html>
-    ''', 200, {'Content-Type': 'text/html'}
+            } catch (error) {
+                errorDiv.querySelector('p').textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btn.textContent = '🔒 SECURE MY CHILD\'S FUTURE - FREE TRIAL';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+    ''')
 
 @app.route('/dashboard')
 def dashboard():
-    user = get_current_user()
+    """Dashboard page - requires authentication"""
+    token = session.get('token')
+    if not token:
+        return redirect('/signin')
+    
+    user_id = verify_jwt_token(token)
+    if not user_id:
+        session.pop('token', None)
+        return redirect('/signin')
+    
+    user = users_db.get(user_id)
     if not user:
-        return redirect('/auth/signin')
+        return redirect('/signin')
     
-    file_path = find_file('.next/server/app/dashboard.html')
-    if file_path:
-        return send_file(file_path)
+    # Get user's children
+    user_children = [child for child in children_db.values() if child['parent_id'] == user_id]
     
-    # Generate dashboard HTML with user data
-    children_html = ""
-    if user['children']:
-        for child in user['children']:
-            tier_info = {
-                'magic_workshop': {'name': 'Magic Workshop', 'color': '#e91e63', 'description': 'Ages 5-7 • Visual block coding'},
-                'innovation_lab': {'name': 'Innovation Lab', 'color': '#2196f3', 'description': 'Ages 8-12 • Advanced blocks'},
-                'professional_studio': {'name': 'Professional Studio', 'color': '#4caf50', 'description': 'Ages 13+ • Real programming'}
-            }.get(child['tier'], {'name': 'Unknown', 'color': '#666', 'description': ''})
-            
-            children_html += f'''
-            <div class="child-card" style="border-left: 4px solid {tier_info['color']};">
-                <h3>{child['name']} (Age {child['age']})</h3>
-                <p><strong>{tier_info['name']}</strong></p>
-                <p>{tier_info['description']}</p>
-                <button class="btn-small">Continue Learning</button>
-            </div>
-            '''
-    else:
-        children_html = '''
-        <div class="empty-state">
-            <h3>No children added yet</h3>
-            <p>Add your first child to get started with their coding journey</p>
-            <button class="btn" onclick="showAddChildForm()">Add Child</button>
-        </div>
-        '''
-    
-    return f'''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Dashboard - Codopia</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }}
-            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; }}
-            .header h1 {{ margin: 0; }}
-            .header p {{ margin: 5px 0 0 0; opacity: 0.9; }}
-            .container {{ max-width: 1200px; margin: 0 auto; padding: 20px; }}
-            .children-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }}
-            .child-card {{ background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-            .child-card h3 {{ margin: 0 0 10px 0; color: #333; }}
-            .child-card p {{ margin: 5px 0; color: #666; }}
-            .btn {{ background: #667eea; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }}
-            .btn:hover {{ background: #5a6fd8; }}
-            .btn-small {{ background: #667eea; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }}
-            .btn-small:hover {{ background: #5a6fd8; }}
-            .empty-state {{ text-align: center; padding: 40px; background: white; border-radius: 10px; }}
-            .nav {{ background: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
-            .nav a {{ color: #667eea; text-decoration: none; margin-right: 20px; }}
-            .nav a:hover {{ text-decoration: underline; }}
-            .logout {{ float: right; }}
-        </style>
-    </head>
-    <body>
-        <div class="nav">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/profile">Profile</a>
-            <a href="/auth/signout" class="logout">Sign Out</a>
-        </div>
-        
-        <div class="header">
-            <h1>Welcome back, {user['profile']['full_name'] if user['profile'] else 'Parent'}!</h1>
-            <p>Manage your children's coding journey</p>
-        </div>
-        
-        <div class="container">
-            <h2>Your Children</h2>
-            <div class="children-grid">
-                {children_html}
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Codopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">C</span>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Codopia</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">Welcome, {{ user.name }}!</span>
+                    <a href="/logout" class="text-purple-600 hover:text-purple-700">Sign Out</a>
+                </div>
             </div>
         </div>
-    </body>
-    </html>
-    ''', 200, {'Content-Type': 'text/html'}
+    </nav>
 
-@app.route('/auth/signout')
-def signout():
-    response = make_response(redirect('/'))
-    response.set_cookie('session_token', '', expires=0)
-    return response
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Family Dashboard</h1>
+            <p class="text-gray-600">Manage your children's coding journey and track their progress</p>
+        </div>
+
+        <!-- Children Cards -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for child in children %}
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 
+                {% if child.tier == 'Magic Workshop' %}border-purple-500{% endif %}
+                {% if child.tier == 'Innovation Lab' %}border-blue-500{% endif %}
+                {% if child.tier == 'Professional Studio' %}border-gray-500{% endif %}
+            ">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">{{ child.name }}</h3>
+                        <p class="text-gray-600">Age {{ child.age }} • {{ child.tier }}</p>
+                    </div>
+                    <div class="w-12 h-12 
+                        {% if child.tier == 'Magic Workshop' %}bg-gradient-to-r from-purple-400 to-pink-400{% endif %}
+                        {% if child.tier == 'Innovation Lab' %}bg-gradient-to-r from-blue-400 to-cyan-400{% endif %}
+                        {% if child.tier == 'Professional Studio' %}bg-gradient-to-r from-gray-600 to-slate-600{% endif %}
+                        rounded-full flex items-center justify-center
+                    ">
+                        {% if child.tier == 'Magic Workshop' %}<span class="text-white text-xl">🎨</span>{% endif %}
+                        {% if child.tier == 'Innovation Lab' %}<span class="text-white text-xl">🔬</span>{% endif %}
+                        {% if child.tier == 'Professional Studio' %}<span class="text-white text-xl">💼</span>{% endif %}
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Progress</span>
+                        <span class="text-sm font-semibold text-gray-900">{{ child.progress }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="
+                            {% if child.tier == 'Magic Workshop' %}bg-gradient-to-r from-purple-500 to-pink-500{% endif %}
+                            {% if child.tier == 'Innovation Lab' %}bg-gradient-to-r from-blue-500 to-cyan-500{% endif %}
+                            {% if child.tier == 'Professional Studio' %}bg-gradient-to-r from-gray-600 to-slate-600{% endif %}
+                            h-2 rounded-full
+                        " style="width: {{ child.progress }}%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-sm text-gray-600">Lessons: {{ child.completed_lessons }}/{{ child.total_lessons }}</span>
+                        <span class="text-sm text-gray-600">{{ child.hours_coded }}h coded</span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 space-y-2">
+                    <a href="/learning/{{ child.tier.lower().replace(' ', '-') }}?child={{ child.id }}" 
+                       class="w-full bg-gradient-to-r 
+                            {% if child.tier == 'Magic Workshop' %}from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700{% endif %}
+                            {% if child.tier == 'Innovation Lab' %}from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700{% endif %}
+                            {% if child.tier == 'Professional Studio' %}from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700{% endif %}
+                            text-white py-3 px-4 rounded-lg font-semibold text-center block transition-all
+                       ">
+                        Continue Learning
+                    </a>
+                    <button class="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all">
+                        View Progress Report
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Add Child Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center min-h-[300px]">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-gray-400 text-2xl">+</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Add Another Child</h3>
+                <p class="text-gray-600 mb-6">Create a profile for another child to start their coding journey</p>
+                <button onclick="showAddChildModal()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all">
+                    Add Child Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2">{{ total_children }}</div>
+                <div class="text-gray-600">Active Learners</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ total_hours }}</div>
+                <div class="text-gray-600">Hours Coded</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ total_lessons }}</div>
+                <div class="text-gray-600">Lessons Completed</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-orange-600 mb-2">{{ total_achievements }}</div>
+                <div class="text-gray-600">Achievements</div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+            <div class="space-y-4">
+                {% for activity in recent_activities %}
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm">{{ activity.child_initial }}</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-gray-900 font-medium">{{ activity.description }}</p>
+                        <p class="text-gray-600 text-sm">{{ activity.time_ago }}</p>
+                    </div>
+                    <div class="text-{{ activity.color }}-500">
+                        {{ activity.icon }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Child Modal -->
+    <div id="add-child-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Add Child Profile</h2>
+            
+            <form id="add-child-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Child's Name</label>
+                    <input 
+                        type="text" 
+                        id="new-child-name"
+                        placeholder="Enter child's name"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        required
+                    />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Child's Age</label>
+                    <select 
+                        id="new-child-age"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        required
+                    >
+                        <option value="">Select age...</option>
+                        <option value="3">3 years old → Magic Workshop</option>
+                        <option value="4">4 years old → Magic Workshop</option>
+                        <option value="5">5 years old → Magic Workshop</option>
+                        <option value="6">6 years old → Magic Workshop</option>
+                        <option value="7">7 years old → Magic Workshop</option>
+                        <option value="8">8 years old → Innovation Lab</option>
+                        <option value="9">9 years old → Innovation Lab</option>
+                        <option value="10">10 years old → Innovation Lab</option>
+                        <option value="11">11 years old → Innovation Lab</option>
+                        <option value="12">12 years old → Innovation Lab</option>
+                        <option value="13">13 years old → Professional Studio</option>
+                        <option value="14">14 years old → Professional Studio</option>
+                        <option value="15">15 years old → Professional Studio</option>
+                        <option value="16">16 years old → Professional Studio</option>
+                        <option value="17">17 years old → Professional Studio</option>
+                        <option value="18">18 years old → Professional Studio</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-4 pt-4">
+                    <button 
+                        type="button" 
+                        onclick="hideAddChildModal()"
+                        class="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                    >
+                        Add Child
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showAddChildModal() {
+            document.getElementById('add-child-modal').classList.remove('hidden');
+        }
+        
+        function hideAddChildModal() {
+            document.getElementById('add-child-modal').classList.add('hidden');
+        }
+        
+        document.getElementById('add-child-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('new-child-name').value;
+            const age = parseInt(document.getElementById('new-child-age').value);
+            
+            try {
+                const response = await fetch('/api/add-child', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, age })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error adding child: ' + data.error);
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
+    ''', user=user, children=user_children, 
+         total_children=len(user_children),
+         total_hours=sum(child.get('hours_coded', 0) for child in user_children),
+         total_lessons=sum(child.get('completed_lessons', 0) for child in user_children),
+         total_achievements=sum(child.get('achievements', 0) for child in user_children),
+         recent_activities=[
+             {
+                 'child_initial': child['name'][0] if user_children else 'C',
+                 'description': f"{child['name']} completed a lesson in {child['tier']}" if user_children else "Welcome to Codopia!",
+                 'time_ago': '2 hours ago' if user_children else 'Just now',
+                 'color': 'green',
+                 'icon': '🎉'
+             } for child in user_children[:3]
+         ] if user_children else [
+             {
+                 'child_initial': 'C',
+                 'description': 'Welcome to Codopia! Add your first child to get started.',
+                 'time_ago': 'Just now',
+                 'color': 'blue',
+                 'icon': '👋'
+             }
+         ])
+
+# API Routes
+@app.route('/api/signin', methods=['POST'])
+def api_signin():
+    """Handle sign in API"""
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    # Find user by email
+    user = None
+    for uid, u in users_db.items():
+        if u['email'] == email:
+            user = u
+            user['id'] = uid
+            break
+    
+    if not user:
+        return jsonify({'success': False, 'error': 'Invalid email or password'})
+    
+    # Check password
+    if not bcrypt.checkpw(password.encode('utf-8'), user['password_hash']):
+        return jsonify({'success': False, 'error': 'Invalid email or password'})
+    
+    # Create session
+    token = create_jwt_token(user['id'])
+    session['token'] = token
+    
+    return jsonify({'success': True})
+
+@app.route('/api/signup', methods=['POST'])
+def api_signup():
+    """Handle sign up API"""
+    data = request.get_json()
+    parent_name = data.get('parent_name')
+    email = data.get('email')
+    password = data.get('password')
+    child_name = data.get('child_name')
+    child_age = data.get('child_age')
+    
+    # Check if email already exists
+    for user in users_db.values():
+        if user['email'] == email:
+            return jsonify({'success': False, 'error': 'Email already registered'})
+    
+    # Create user
+    user_id = f"user_{len(users_db) + 1}"
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    
+    users_db[user_id] = {
+        'name': parent_name,
+        'email': email,
+        'password_hash': password_hash,
+        'created_at': datetime.utcnow().isoformat()
+    }
+    
+    # Create child profile
+    child_id = f"child_{len(children_db) + 1}"
+    tier = get_tier_from_age(child_age)
+    
+    children_db[child_id] = {
+        'id': child_id,
+        'parent_id': user_id,
+        'name': child_name,
+        'age': child_age,
+        'tier': tier,
+        'progress': 0,
+        'completed_lessons': 0,
+        'total_lessons': 5 if tier == 'Magic Workshop' else 5 if tier == 'Innovation Lab' else 6,
+        'hours_coded': 0,
+        'achievements': 0,
+        'created_at': datetime.utcnow().isoformat()
+    }
+    
+    # Create session
+    token = create_jwt_token(user_id)
+    session['token'] = token
+    
+    return jsonify({'success': True})
 
 @app.route('/api/add-child', methods=['POST'])
-def add_child():
-    user = get_current_user()
-    if not user:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+def api_add_child():
+    """Add child profile API"""
+    token = session.get('token')
+    if not token:
+        return jsonify({'success': False, 'error': 'Not authenticated'})
+    
+    user_id = verify_jwt_token(token)
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Invalid session'})
     
     data = request.get_json()
     name = data.get('name')
     age = data.get('age')
     
-    if not name or not age:
-        return jsonify({"success": False, "error": "Name and age are required"}), 400
+    # Create child profile
+    child_id = f"child_{len(children_db) + 1}"
+    tier = get_tier_from_age(age)
     
-    try:
-        age = int(age)
-    except ValueError:
-        return jsonify({"success": False, "error": "Invalid age"}), 400
+    children_db[child_id] = {
+        'id': child_id,
+        'parent_id': user_id,
+        'name': name,
+        'age': age,
+        'tier': tier,
+        'progress': 0,
+        'completed_lessons': 0,
+        'total_lessons': 5 if tier == 'Magic Workshop' else 5 if tier == 'Innovation Lab' else 6,
+        'hours_coded': 0,
+        'achievements': 0,
+        'created_at': datetime.utcnow().isoformat()
+    }
     
-    result = auth_service.create_child_profile(user['id'], name, age)
-    return jsonify(result)
+    return jsonify({'success': True})
 
-@app.route('/_next/<path:path>')
-def serve_next(path):
-    next_dir = find_directory('.next')
-    if next_dir:
-        try:
-            return send_from_directory(next_dir, path)
-        except:
-            pass
-    return "Asset not found", 404
+@app.route('/logout')
+def logout():
+    """Sign out user"""
+    session.pop('token', None)
+    return redirect('/')
 
-@app.route('/static/<path:path>')
-def serve_static(path):
-    public_dir = find_directory('public')
-    if public_dir:
-        try:
-            return send_from_directory(public_dir, path)
-        except:
-            pass
-    return "Static file not found", 404
+@app.route('/learning/magic-workshop')
+def magic_workshop():
+    """Magic Workshop learning environment"""
+    token = session.get('token')
+    if not token:
+        return redirect('/signin')
+    
+    user_id = verify_jwt_token(token)
+    if not user_id:
+        return redirect('/signin')
+    
+    child_id = request.args.get('child')
+    child = children_db.get(child_id)
+    
+    if not child or child['parent_id'] != user_id:
+        return redirect('/dashboard')
+    
+    # Serve the Magic Workshop learning environment
+    file_path = get_file_path('templates/learning/magic_workshop.html')
+    if file_path:
+        return send_file(file_path)
+    else:
+        return "Magic Workshop learning environment coming soon!", 200
 
 @app.route('/debug')
 def debug():
-    """Debug endpoint to check file locations and auth status"""
-    cwd = os.getcwd()
-    script_dir = os.path.dirname(__file__)
-    user = get_current_user()
-    
-    files_info = {
-        'current_directory': cwd,
-        'script_directory': script_dir,
-        'files_in_cwd': os.listdir(cwd) if os.path.exists(cwd) else [],
-        'files_in_script_dir': os.listdir(script_dir) if os.path.exists(script_dir) else [],
-        'src_exists': os.path.exists('/src'),
-        'next_exists_cwd': os.path.exists(os.path.join(cwd, '.next')),
-        'next_exists_src': os.path.exists('/src/.next'),
-        'index_html_path': find_file('.next/server/app/index.html'),
-        'next_directory_path': find_directory('.next'),
-        'authenticated_user': user is not None,
-        'user_id': user['id'] if user else None,
-        'children_count': len(user['children']) if user else 0
-    }
-    return jsonify(files_info)
-
-# Add learning environment routes
-@app.route('/learning/magic-workshop')
-def magic_workshop():
-    user = get_current_user()
-    if not user:
-        return redirect('/auth/signin')
-    
-    # Find a child in Magic Workshop tier
-    magic_child = None
-    for child in user['children']:
-        if child['tier'] == 'magic_workshop':
-            magic_child = child
-            break
-    
-    if not magic_child:
-        return redirect('/dashboard?error=no_magic_workshop_child')
-    
-    # Serve the Magic Workshop learning environment
-    template_path = find_file('templates/learning/magic_workshop.html')
-    if template_path:
-        with open(template_path, 'r') as f:
-            content = f.read()
-        
-        # Replace child name in template
-        content = content.replace('Emma', magic_child['name'])
-        return content, 200, {'Content-Type': 'text/html'}
-    
-    return "Magic Workshop not found", 404
-
-@app.route('/learning/innovation-lab')
-def innovation_lab():
-    user = get_current_user()
-    if not user:
-        return redirect('/auth/signin')
-    
-    return "Innovation Lab coming soon!", 200
-
-@app.route('/learning/professional-studio')
-def professional_studio():
-    user = get_current_user()
-    if not user:
-        return redirect('/auth/signin')
-    
-    return "Professional Studio coming soon!", 200
-
-# Serve static files for learning environment
-@app.route('/static/<path:filename>')
-def serve_learning_static(filename):
-    static_dir = find_directory('static')
-    if static_dir:
-        return send_from_directory(static_dir, filename)
-    return "File not found", 404
-
-# Initialize Professor Sparkle routes
-professor_sparkle = ProfessorSparkle()
-create_sparkle_routes(app)
+    """Debug endpoint to check file paths"""
+    return jsonify({
+        'current_directory': os.getcwd(),
+        'files_in_cwd': os.listdir('.'),
+        'index_html_path': get_file_path('index.html'),
+        'next_exists': os.path.exists('.next'),
+        'src_exists': os.path.exists('src'),
+        'users_count': len(users_db),
+        'children_count': len(children_db)
+    })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
