@@ -1,36 +1,248 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Codopia - Where Code Becomes Craft
 
-## Getting Started
+A comprehensive coding education platform for children ages 3-18, featuring AI-powered tutoring, interactive learning environments, and tier-based curriculum progression.
 
-First, run the development server:
+## 🌟 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Codopia transforms coding education through:
+- **🧙‍♂️ Professor Sparkle**: AI tutor with Gemini Live voice interaction
+- **🎨 Three Learning Tiers**: Age-appropriate progression from visual blocks to professional programming
+- **🔒 Enterprise Security**: Supabase authentication with Row Level Security
+- **📱 Modern Stack**: Next.js 15, TypeScript, Tailwind CSS, Flask backend
+
+## 🎯 Learning Tiers
+
+### 🎨 Magic Workshop (Ages 3-7)
+- Visual block coding with magical themes
+- Story-based learning adventures
+- Basic programming concepts through play
+- **Lessons**: Wizard Movement, Spell Patterns, Magical Decisions, Treasure Hunt, Magic Functions
+
+### 🔬 Innovation Lab (Ages 8-12)
+- Advanced block coding and app development
+- Real-world problem solving
+- Collaborative projects and creativity
+- **Lessons**: First App, Data Detective, Game Creator, Robot Commander, Web Designer
+
+### 💼 Professional Studio (Ages 13-18)
+- Real programming languages (Python, JavaScript, etc.)
+- Software engineering principles
+- Career preparation and industry practices
+- **Lessons**: Python Fundamentals, OOP, Web Development, Mobile Apps, AI/ML, Career Prep
+
+## 🏗️ Architecture
+
+### Frontend (Next.js 15)
+```
+frontend/
+├── pages/           # Next.js app router pages
+├── components/      # Reusable React components
+├── lib/            # Utilities and configurations
+└── assets/         # Static assets and media
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend (Flask + Supabase)
+```
+backend/
+├── main.py         # Flask application entry point
+├── auth/           # Authentication services
+├── ai/             # Professor Sparkle AI tutor
+├── database/       # Supabase schema and migrations
+├── templates/      # Learning environment templates
+└── static/         # Backend static assets
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Documentation
+```
+docs/
+├── architecture/   # System design and migration plans
+├── deployment/     # Deployment guides and summaries
+├── api/           # API documentation and integrations
+└── curriculum/    # Educational content and lesson plans
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Quick Start
 
-## Learn More
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.11+
+- Supabase account
+- Gemini API key (for Professor Sparkle)
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clone the repository**
+```bash
+git clone https://github.com/AllienNova/Codopia.git
+cd Codopia
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install frontend dependencies**
+```bash
+npm install
+```
 
-## Deploy on Vercel
+3. **Install backend dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Environment setup**
+```bash
+# Copy environment template
+cp .env.local.example .env.local
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Configure your environment variables
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+5. **Database setup**
+```bash
+# Run Supabase migrations
+npx supabase db push
+```
+
+6. **Start development servers**
+```bash
+# Frontend (Next.js)
+npm run dev
+
+# Backend (Flask)
+cd backend && python main.py
+```
+
+## 🧙‍♂️ Professor Sparkle AI Tutor
+
+### Features
+- **Real-time voice interaction** using Gemini Live API
+- **Age-appropriate teaching** with developmental stage awareness
+- **Comprehensive safety protocols** for child protection
+- **Interactive learning support** with visual aids and progress tracking
+
+### Voice Interaction
+```javascript
+// Initialize Professor Sparkle
+const sparkle = new ProfessorSparkleVoice();
+await sparkle.connectToSparkle(childProfile);
+
+// Voice interaction automatically handles:
+// - Speech recognition and processing
+// - Real-time AI response generation
+// - Visual feedback synchronization
+// - Progress tracking and assessment
+```
+
+### Safety Safeguards
+- ✅ Never requests personal information
+- ✅ Redirects inappropriate topics to educational content
+- ✅ Maintains professional boundaries
+- ✅ Provides accurate coding information only
+- ✅ Adapts to child's developmental stage
+
+## 🔒 Security & Authentication
+
+### Supabase Integration
+- **Row Level Security (RLS)** for data protection
+- **Parent-child relationship management**
+- **Automatic tier assignment** based on age
+- **Session management** with secure tokens
+
+### Authentication Flow
+1. Parent creates account with email/password
+2. Child profile created with age-based tier assignment
+3. Secure session established with JWT tokens
+4. Access control enforced through RLS policies
+
+## 🎨 Learning Environment
+
+### Interactive Features
+- **Drag-and-drop coding blocks** for visual programming
+- **Real-time code execution** with immediate feedback
+- **Progress tracking** with achievement system
+- **Collaborative features** for peer learning
+
+### Curriculum Integration
+- **Structured lesson progression** with prerequisites
+- **Assessment criteria** for each learning objective
+- **Cross-curricular connections** to math, science, and art
+- **Portfolio development** for showcasing projects
+
+## 📊 Technology Stack
+
+### Frontend
+- **Next.js 15** - React framework with app router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first styling
+- **Supabase Client** - Database and auth integration
+
+### Backend
+- **Flask** - Python web framework
+- **Supabase** - PostgreSQL database with real-time features
+- **Gemini Live API** - AI voice interaction
+- **WebSockets** - Real-time communication
+
+### Infrastructure
+- **Vercel** - Frontend deployment
+- **Manus Cloud** - Backend hosting
+- **Supabase** - Database and authentication
+- **GitHub Actions** - CI/CD pipeline
+
+## 🚀 Deployment
+
+### Production URLs
+- **Frontend**: Deployed on Vercel
+- **Backend**: https://0vhlizcg6ze5.manus.space
+- **Database**: Supabase cloud instance
+
+### Environment Configuration
+```bash
+# Production environment variables
+SUPABASE_URL=https://ylymepybqcykyomsmxwk.supabase.co
+SUPABASE_ANON_KEY=your_production_key
+GEMINI_API_KEY=your_production_gemini_key
+FLASK_SECRET_KEY=your_secure_secret_key
+```
+
+## 📚 Documentation
+
+- **[Architecture Overview](docs/architecture/)** - System design and migration strategies
+- **[API Documentation](docs/api/)** - Gemini Live integration and endpoints
+- **[Deployment Guide](docs/deployment/)** - Production deployment instructions
+- **[Curriculum Guide](docs/curriculum/)** - Educational content and lesson plans
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Maintain comprehensive test coverage
+- Document all new features
+- Ensure child safety in all implementations
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Supabase** for providing the backend infrastructure
+- **Google Gemini** for AI capabilities
+- **Next.js team** for the excellent React framework
+- **Open source community** for the amazing tools and libraries
+
+## 📞 Support
+
+For support, email support@codopia.com or join our community Discord.
+
+---
+
+**Built with ❤️ for the next generation of coders**
+
+*Codopia - Where Code Becomes Craft*
