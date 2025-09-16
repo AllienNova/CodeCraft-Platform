@@ -416,59 +416,70 @@ def signup():
     
     # Handle POST request
     try:
-        data = request.form
-        parent_name = data.get('parent_name')
-        email = data.get('email')
-        password = data.get('password')
-        child_name = data.get('child_name')
-        child_age_str = data.get('child_age')
+        data =@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'GET':
+        return render_template_string(signup_html)
+    
+    try:
+        # Get form data
+        parent_name = request.form.get('parent_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        child_name = request.form.get('child_name')
+        child_age = request.form.get('child_age')
         
-        if not child_age_str:
-            return "Error: Child age is required", 400
-            
-        child_age = int(child_age_str)
-    except (ValueError, TypeError) as e:
-        return f"Error: Invalid child age format - {str(e)}", 400
-    
-    # Determine tier based on age
-    if child_age <= 7:
-        tier = 'Magic Workshop'
-    elif child_age <= 12:
-        tier = 'Innovation Lab'
-    else:
-        tier = 'Professional Studio'
-    
-    # Hash password
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    
-    # Create user
-    user = {
-        'id': len(users) + 1,
-        'parent_name': parent_name,
-        'email': email,
-        'password_hash': password_hash,
-        'children': [{
-            'name': child_name,
-            'age': child_age,
-            'tier': tier,
-            'progress': 0,
-            'achievements': 0
-        }],
-        'created_at': datetime.now().isoformat()
-    }
-    
-    users.append(user)
-    
-    # Create JWT token
-    token = jwt.encode({
-        'user_id': user['id'],
-        'email': email,
-        'exp': datetime.now() + timedelta(days=30)
-    }, app.secret_key, algorithm='HS256')
-    
-    # Create response and set cookie
-    response = make_response(redirect('/dashboard'))
-    response.set_cookie('auth_token', token, max_age=30*24*60*60, httponly=True)
+        # Validate required fields
+        if not all([parent_name, email, password, child_name, child_age]):
+            return "All fields are required", 400
+        
+        # Check if user already exists
+        if any(u['email'] == email for u in users):
+            return "Email already registered", 400
+        
+        # Hash password
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        
+        # Determine tier based on age
+        age = int(child_age)
+        if age <= 7:
+            tier = "Magic Workshop"
+        elif age <= 12:
+            tier = "Innovation Lab"
+        else:
+            tier = "Professional Studio"
+        
+        # Create user
+        user = {
+            'id': len(users) + 1,
+            'parent_name': parent_name,
+            'email': email,
+            'password_hash': password_hash,
+            'children': [{
+                'name': child_name,
+                'age': age,
+                'tier': tier,
+                'progress': 0
+            }]
+        }
+        
+        users.append(user)
+        
+        # Create JWT token
+        token = jwt.encode({
+            'user_id': user['id'],
+            'email': email,
+            'exp': datetime.now() + timedelta(days=30)
+        }, app.secret_key, algorithm='HS256')
+        
+        # Create response and set cookie
+        response = make_response(redirect('/dashboard'))
+        response.set_cookie('auth_token', token, max_age=30*24*60*60, httponly=True)
+        return response
+        
+    except Exception as e:
+        print(f"Signup error: {e}")
+        return f"Signup failed: {str(e)}", 500)
     
     return response
 
