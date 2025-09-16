@@ -14,7 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-production')
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Get port from environment (Railway sets this)
 port = int(os.environ.get('PORT', 5000))
