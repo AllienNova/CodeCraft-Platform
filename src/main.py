@@ -1,9 +1,9 @@
 from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for, send_file
 import os
 import json
+import hashlib
 from datetime import datetime, timedelta
 import jwt
-import bcrypt
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-production')
@@ -12,20 +12,13 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-p
 users_db = {}
 children_db = {}
 
-def get_file_path(relative_path):
-    """Find file in multiple possible locations"""
-    possible_paths = [
-        relative_path,
-        os.path.join('.next', 'server', 'app', relative_path),
-        os.path.join('src', '.next', 'server', 'app', relative_path),
-        os.path.join('/src', '.next', 'server', 'app', relative_path),
-        os.path.join(os.getcwd(), '.next', 'server', 'app', relative_path)
-    ]
-    
-    for path in possible_paths:
-        if os.path.exists(path):
-            return path
-    return None
+def hash_password(password):
+    """Simple password hashing using hashlib"""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def verify_password(password, hashed):
+    """Verify password against hash"""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest() == hashed
 
 def create_jwt_token(user_id):
     """Create JWT token for user"""
@@ -957,7 +950,7 @@ def api_signin():
         return jsonify({'success': False, 'error': 'Invalid email or password'})
     
     # Check password
-    if not bcrypt.checkpw(password.encode('utf-8'), user['password_hash']):
+    if not verify_password(password, user['password_hash']):
         return jsonify({'success': False, 'error': 'Invalid email or password'})
     
     # Create session
@@ -983,7 +976,7 @@ def api_signup():
     
     # Create user
     user_id = f"user_{len(users_db) + 1}"
-    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    password_hash = hash_password(password)
     
     users_db[user_id] = {
         'name': parent_name,
@@ -1074,12 +1067,45 @@ def magic_workshop():
     if not child or child['parent_id'] != user_id:
         return redirect('/dashboard')
     
-    # Serve the Magic Workshop learning environment
-    file_path = get_file_path('templates/learning/magic_workshop.html')
-    if file_path:
-        return send_file(file_path)
-    else:
-        return "Magic Workshop learning environment coming soon!", 200
+    return "🎨 Magic Workshop learning environment coming soon! Professor Sparkle is preparing magical coding adventures for your child.", 200
+
+@app.route('/learning/innovation-lab')
+def innovation_lab():
+    """Innovation Lab learning environment"""
+    token = session.get('token')
+    if not token:
+        return redirect('/signin')
+    
+    user_id = verify_jwt_token(token)
+    if not user_id:
+        return redirect('/signin')
+    
+    child_id = request.args.get('child')
+    child = children_db.get(child_id)
+    
+    if not child or child['parent_id'] != user_id:
+        return redirect('/dashboard')
+    
+    return "🔬 Innovation Lab learning environment coming soon! Get ready for app development and robot programming!", 200
+
+@app.route('/learning/professional-studio')
+def professional_studio():
+    """Professional Studio learning environment"""
+    token = session.get('token')
+    if not token:
+        return redirect('/signin')
+    
+    user_id = verify_jwt_token(token)
+    if not user_id:
+        return redirect('/signin')
+    
+    child_id = request.args.get('child')
+    child = children_db.get(child_id)
+    
+    if not child or child['parent_id'] != user_id:
+        return redirect('/dashboard')
+    
+    return "💼 Professional Studio learning environment coming soon! Real programming languages and career preparation await!", 200
 
 @app.route('/debug')
 def debug():
@@ -1087,11 +1113,10 @@ def debug():
     return jsonify({
         'current_directory': os.getcwd(),
         'files_in_cwd': os.listdir('.'),
-        'index_html_path': get_file_path('index.html'),
-        'next_exists': os.path.exists('.next'),
-        'src_exists': os.path.exists('src'),
         'users_count': len(users_db),
-        'children_count': len(children_db)
+        'children_count': len(children_db),
+        'sample_user': list(users_db.keys())[:1] if users_db else None,
+        'sample_child': list(children_db.keys())[:1] if children_db else None
     })
 
 if __name__ == '__main__':
