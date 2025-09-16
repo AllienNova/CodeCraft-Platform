@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, make_response
+from flask import Flask, request, jsonify, render_template_string, session, redirect, url_for
 from flask_socketio import SocketIO, emit
 import hashlib
 import jwt
@@ -8,9 +8,16 @@ import asyncio
 import json
 from gemini_live_sparkle_fixed import professor_sparkle, initialize_sparkle_session, get_sparkle_response
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-in-production'
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-production')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# Get port from environment (Railway sets this)
+port = int(os.environ.get('PORT', 5000))
 
 # In-memory user storage (replace with database in production)
 users = []
@@ -1393,5 +1400,7 @@ def forgot_password():
     '''
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # Production configuration for Railway
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)
 

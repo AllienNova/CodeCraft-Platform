@@ -217,6 +217,7 @@ class ProfessorSparkle:
     
     def _get_age_appropriate_response_style(self, age: int) -> Dict[str, Any]:
         """Get age-appropriate response style and vocabulary"""
+        age = int(age)  # Ensure age is integer
         if age <= 5:
             return {
                 'vocabulary': 'very_simple',
