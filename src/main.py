@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import os
 import asyncio
 import json
-from gemini_live_sparkle import professor_sparkle, initialize_sparkle_session, get_sparkle_response
+from gemini_live_sparkle_fixed import professor_sparkle, initialize_sparkle_session, get_sparkle_response
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
