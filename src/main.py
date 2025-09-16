@@ -415,12 +415,20 @@ def signup():
         '''
     
     # Handle POST request
-    data = request.form
-    parent_name = data.get('parent_name')
-    email = data.get('email')
-    password = data.get('password')
-    child_name = data.get('child_name')
-    child_age = int(data.get('child_age'))
+    try:
+        data = request.form
+        parent_name = data.get('parent_name')
+        email = data.get('email')
+        password = data.get('password')
+        child_name = data.get('child_name')
+        child_age_str = data.get('child_age')
+        
+        if not child_age_str:
+            return "Error: Child age is required", 400
+            
+        child_age = int(child_age_str)
+    except (ValueError, TypeError) as e:
+        return f"Error: Invalid child age format - {str(e)}", 400
     
     # Determine tier based on age
     if child_age <= 7:
