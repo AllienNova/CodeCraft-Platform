@@ -1,32 +1,32 @@
 import os
-from supabase import create_client, Client
-from dotenv import load_dotenv
-import bcrypt
+import hashlib
+import secrets
 from datetime import datetime, timedelta
-import jwt
-
-# Load environment variables
-load_dotenv()
+import json
 
 class SupabaseAuthService:
     def __init__(self):
-        self.url = os.getenv('SUPABASE_URL')
-        self.anon_key = os.getenv('SUPABASE_ANON_KEY')
-        self.service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-        self.secret_key = os.getenv('FLASK_SECRET_KEY')
+        self.url = os.getenv('SUPABASE_URL', 'https://ylymepybqcykyomsmxwk.supabase.co')
+        self.anon_key = os.getenv('SUPABASE_ANON_KEY', '')
+        self.service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+        self.secret_key = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
         
-        # Create Supabase clients
-        self.supabase: Client = create_client(self.url, self.anon_key)
-        self.admin_supabase: Client = create_client(self.url, self.service_key)
+        # Simple in-memory storage for demo (replace with actual Supabase calls)
+        self.users = {}
+        self.children = {}
     
     def hash_password(self, password: str) -> str:
-        """Hash password using bcrypt"""
-        salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        """Simple password hashing"""
+        salt = secrets.token_hex(16)
+        return hashlib.sha256((password + salt).encode()).hexdigest() + ':' + salt
     
     def verify_password(self, password: str, hashed: str) -> bool:
         """Verify password against hash"""
-        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+        try:
+            hash_part, salt = hashed.split(':')
+            return hashlib.sha256((password + salt).encode()).hexdigest() == hash_part
+        except:
+            return False
     
     def determine_tier(self, age: int) -> str:
         """Determine learning tier based on age"""
@@ -38,43 +38,33 @@ class SupabaseAuthService:
             return 'professional_studio'
     
     def create_user_account(self, email: str, password: str, full_name: str) -> dict:
-        """Create a new user account using Supabase Auth"""
+        """Create a new user account"""
         try:
-            # Create user with Supabase Auth
-            auth_response = self.supabase.auth.sign_up({
-                "email": email,
-                "password": password,
-                "options": {
-                    "data": {
-                        "full_name": full_name,
-                        "role": "parent"
-                    }
-                }
-            })
-            
-            if auth_response.user:
-                # Create profile in our custom table
-                profile_data = {
-                    "id": auth_response.user.id,
-                    "email": email,
-                    "full_name": full_name,
-                    "role": "parent",
-                    "created_at": datetime.utcnow().isoformat()
-                }
-                
-                profile_response = self.admin_supabase.table('profiles').insert(profile_data).execute()
-                
-                return {
-                    "success": True,
-                    "user": auth_response.user,
-                    "profile": profile_response.data[0] if profile_response.data else None,
-                    "message": "Account created successfully"
-                }
-            else:
+            if email in self.users:
                 return {
                     "success": False,
-                    "error": "Failed to create user account"
+                    "error": "User already exists"
                 }
+            
+            user_id = secrets.token_hex(16)
+            hashed_password = self.hash_password(password)
+            
+            user_data = {
+                "id": user_id,
+                "email": email,
+                "password": hashed_password,
+                "full_name": full_name,
+                "role": "parent",
+                "created_at": datetime.utcnow().isoformat()
+            }
+            
+            self.users[email] = user_data
+            
+            return {
+                "success": True,
+                "user": {"id": user_id, "email": email},
+                "message": "Account created successfully"
+            }
                 
         except Exception as e:
             return {
@@ -85,31 +75,30 @@ class SupabaseAuthService:
     def sign_in_user(self, email: str, password: str) -> dict:
         """Sign in user with email and password"""
         try:
-            auth_response = self.supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
-            
-            if auth_response.user:
-                # Get user profile
-                profile_response = self.supabase.table('profiles').select('*').eq('id', auth_response.user.id).execute()
-                
-                # Get user's children
-                children_response = self.supabase.table('children').select('*').eq('parent_id', auth_response.user.id).execute()
-                
-                return {
-                    "success": True,
-                    "user": auth_response.user,
-                    "session": auth_response.session,
-                    "profile": profile_response.data[0] if profile_response.data else None,
-                    "children": children_response.data if children_response.data else [],
-                    "message": "Signed in successfully"
-                }
-            else:
+            if email not in self.users:
                 return {
                     "success": False,
                     "error": "Invalid credentials"
                 }
+            
+            user = self.users[email]
+            if not self.verify_password(password, user['password']):
+                return {
+                    "success": False,
+                    "error": "Invalid credentials"
+                }
+            
+            # Get user's children
+            user_children = [child for child in self.children.values() if child['parent_id'] == user['id']]
+            
+            return {
+                "success": True,
+                "user": {"id": user['id'], "email": user['email']},
+                "session": {"access_token": "demo_token"},
+                "profile": user,
+                "children": user_children,
+                "message": "Signed in successfully"
+            }
                 
         except Exception as e:
             return {
@@ -121,8 +110,10 @@ class SupabaseAuthService:
         """Create a child profile"""
         try:
             tier = self.determine_tier(age)
+            child_id = secrets.token_hex(16)
             
             child_data = {
+                "id": child_id,
                 "parent_id": parent_id,
                 "name": name,
                 "age": age,
@@ -130,19 +121,13 @@ class SupabaseAuthService:
                 "created_at": datetime.utcnow().isoformat()
             }
             
-            response = self.admin_supabase.table('children').insert(child_data).execute()
+            self.children[child_id] = child_data
             
-            if response.data:
-                return {
-                    "success": True,
-                    "child": response.data[0],
-                    "message": f"Child profile created successfully in {tier.replace('_', ' ').title()}"
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": "Failed to create child profile"
-                }
+            return {
+                "success": True,
+                "child": child_data,
+                "message": f"Child profile created successfully in {tier.replace('_', ' ').title()}"
+            }
                 
         except Exception as e:
             return {
@@ -153,16 +138,26 @@ class SupabaseAuthService:
     def get_user_with_children(self, user_id: str) -> dict:
         """Get user profile with children"""
         try:
-            # Get user profile
-            profile_response = self.supabase.table('profiles').select('*').eq('id', user_id).execute()
+            # Find user by ID
+            user = None
+            for u in self.users.values():
+                if u['id'] == user_id:
+                    user = u
+                    break
+            
+            if not user:
+                return {
+                    "success": False,
+                    "error": "User not found"
+                }
             
             # Get user's children
-            children_response = self.supabase.table('children').select('*').eq('parent_id', user_id).execute()
+            user_children = [child for child in self.children.values() if child['parent_id'] == user_id]
             
             return {
                 "success": True,
-                "profile": profile_response.data[0] if profile_response.data else None,
-                "children": children_response.data if children_response.data else []
+                "profile": user,
+                "children": user_children
             }
             
         except Exception as e:
@@ -172,28 +167,26 @@ class SupabaseAuthService:
             }
     
     def create_session_token(self, user_id: str) -> str:
-        """Create a JWT session token"""
-        payload = {
-            'user_id': user_id,
-            'exp': datetime.utcnow() + timedelta(days=7),
-            'iat': datetime.utcnow()
-        }
-        return jwt.encode(payload, self.secret_key, algorithm='HS256')
+        """Create a simple session token"""
+        return f"session_{user_id}_{secrets.token_hex(16)}"
     
     def verify_session_token(self, token: str) -> dict:
-        """Verify JWT session token"""
+        """Verify session token"""
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])
-            return {
-                "success": True,
-                "user_id": payload['user_id']
-            }
-        except jwt.ExpiredSignatureError:
+            if token.startswith('session_'):
+                parts = token.split('_')
+                if len(parts) >= 3:
+                    user_id = parts[1]
+                    return {
+                        "success": True,
+                        "user_id": user_id
+                    }
+            
             return {
                 "success": False,
-                "error": "Token has expired"
+                "error": "Invalid token"
             }
-        except jwt.InvalidTokenError:
+        except:
             return {
                 "success": False,
                 "error": "Invalid token"
@@ -201,14 +194,7 @@ class SupabaseAuthService:
     
     def sign_out_user(self) -> dict:
         """Sign out current user"""
-        try:
-            self.supabase.auth.sign_out()
-            return {
-                "success": True,
-                "message": "Signed out successfully"
-            }
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+        return {
+            "success": True,
+            "message": "Signed out successfully"
+        }
