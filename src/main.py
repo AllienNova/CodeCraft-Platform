@@ -12,6 +12,15 @@ from gemini_live_sparkle_fixed import professor_sparkle, initialize_sparkle_sess
 from dotenv import load_dotenv
 load_dotenv()
 
+# Initialize Supabase client
+try:
+    from supabase_client import SupabaseClient
+    db = SupabaseClient()
+    print("✅ Supabase database client initialized successfully")
+except Exception as e:
+    print(f"⚠️ Supabase initialization failed, using fallback: {e}")
+    db = None
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-change-in-production')
 socketio = SocketIO(app, cors_allowed_origins="*")
