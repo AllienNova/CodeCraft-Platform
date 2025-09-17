@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codopia - Code Your Future, Change Your World</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
+        }
+        .float { animation: float 3s ease-in-out infinite; }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">✨</span>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Codopia</span>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-purple-600 font-semibold transition-colors">Home</a>
+                    <a href="#features" class="text-gray-700 hover:text-purple-600 font-semibold transition-colors">Features</a>
+                    <a href="#academy" class="text-gray-700 hover:text-purple-600 font-semibold transition-colors">Codopia Academy</a>
+                    <a href="#pricing" class="text-gray-700 hover:text-purple-600 font-semibold transition-colors">Pricing</a>
+                    <a href="#about" class="text-gray-700 hover:text-purple-600 font-semibold transition-colors">About</a>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button onclick="window.location.href='/signin'" class="px-6 py-2 text-purple-600 font-semibold hover:bg-purple-50 rounded-lg transition-all">Sign In</button>
+                    <button onclick="window.location.href='#signup'" class="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all">Start Free Trial</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Urgency Banner -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    <span class="text-xl mr-2">🔥</span>
+                    URGENT: Only 91 Beta Spots Left - Filling Fast!
+                </div>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                        Your Child's<br>
+                        <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Coding Adventure</span><br>
+                        Starts Here
+                    </h1>
+                    
+                    <p class="text-xl text-gray-600 mb-8">
+                        Don't let your child fall behind in the digital revolution. Transform them into a confident programmer 
+                        through magical adventures, real app building, and professional development skills.
+                    </p>
+                    
+                    <div class="flex flex-wrap items-center gap-6 mb-8">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Ages 5-15</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">100% Safe</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">Irresistibly Fun</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-6 mb-8">
+                        <div class="flex items-center space-x-2">
+                            <div class="flex -space-x-2">
+                                <div class="w-8 h-8 bg-purple-400 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-pink-400 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-blue-400 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-green-400 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-yellow-400 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div>
+                                <div class="text-yellow-400 text-sm">⭐⭐⭐⭐⭐</div>
+                                <div class="text-sm text-gray-600">20+ families joined</div>
+                                <div class="text-xs text-gray-500">This month alone!</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-gray-900">4.9/5 rating</div>
+                            <div class="text-sm text-gray-600">From real parents</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span>COPPA+ Compliant</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span>No Credit Card Required</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                            <span>Parent Approved</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Warning Box -->
+                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mt-8">
+                        <div class="flex items-start">
+                            <span class="text-orange-400 text-xl mr-3">⚠️</span>
+                            <div>
+                                <p class="font-semibold text-orange-800">Warning:</p>
+                                <p class="text-orange-700">Software developer salaries average $107,000+. Children who start coding early have a <strong>300% advantage</strong> in future earnings.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 text-white">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">✨</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Join Codopia NOW</h3>
+                        <p class="text-purple-100">Be among the first 99 families to experience the future of coding education by Requesting Early Access Now. DON'T LET YOUR CHILD FALL BEHIND</p>
+                    </div>
+                    
+                    <div class="bg-red-500 text-white px-4 py-2 rounded-lg text-center mb-6">
+                        <span class="font-bold">🔥 LIVE: Join the first wave of beta testers!</span>
+                    </div>
+                    
+                    <form id="signup-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Parent Email Address</label>
+                            <input type="email" name="email" placeholder="your.email@example.com" required 
+                                   class="w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Child's Age (This determines their learning tier)</label>
+                            <select name="age" required class="w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50">
+                                <option value="">Select age to unlock their perfect tier...</option>
+                                <option value="5">5 years old → 🦄 Magic Workshop</option>
+                                <option value="6">6 years old → 🦄 Magic Workshop</option>
+                                <option value="7">7 years old → 🦄 Magic Workshop</option>
+                                <option value="8">8 years old → 🚀 Innovation Lab</option>
+                                <option value="9">9 years old → 🚀 Innovation Lab</option>
+                                <option value="10">10 years old → 💻 Professional Studio</option>
+                                <option value="11">11 years old → 💻 Professional Studio</option>
+                                <option value="12">12 years old → 💻 Professional Studio</option>
+                                <option value="13">13 years old → 💻 Professional Studio</option>
+                                <option value="14">14 years old → 💻 Professional Studio</option>
+                                <option value="15">15 years old → 💻 Professional Studio</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg transition-all transform hover:scale-105">
+                            ⚡ SECURE MY CHILD'S FUTURE - FREE TRIAL
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4 space-y-2">
+                        <p class="text-purple-100 text-sm">🔒 Your information is encrypted and will never be shared</p>
+                        <div class="flex justify-center space-x-6 text-sm text-purple-100">
+                            <span>⚡ Instant Access</span>
+                            <span>🚫 No Commitment</span>
+                            <span>❌ Cancel Anytime</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Urgency Footer -->
+            <div class="text-center mt-12">
+                <div class="bg-orange-500 text-white px-6 py-4 rounded-xl inline-block">
+                    <div class="font-bold text-lg">⏰ URGENT: Only 91 Beta Spots Remaining</div>
+                    <div class="text-sm mt-1">⚠️ Spots are filling every few minutes - Don't wait!</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Three Tiers Section -->
+    <section id="tiers" class="py-20 bg-white/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    Three Magical Tiers That <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Grow With Your Child</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    From magical adventures to professional development, each tier is scientifically 
+                    designed for your child's cognitive development stage
+                </p>
+            </div>
+            
+            <!-- Tier Selection Buttons -->
+            <div class="flex justify-center space-x-4 mb-12">
+                <button class="px-6 py-2 bg-purple-100 text-purple-700 rounded-full font-semibold">Ready for Magic Workshop</button>
+                <button class="px-6 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold">Ready for Innovation Lab</button>
+                <button class="px-6 py-2 bg-green-100 text-green-700 rounded-full font-semibold">Ready for Professional Studio</button>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Magic Workshop -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200 hover:shadow-xl transition-all">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">✨</span>
+                        </div>
+                        <div class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-semibold mb-2">Ages 5-7</div>
+                        <h3 class="text-2xl font-bold text-purple-700 mb-2">Magic Workshop</h3>
+                        <p class="text-purple-600 font-semibold">Where coding feels like casting spells with Sparkle the Unicorn</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-purple-500">•</span>
+                            <span>Drag-and-drop "spell blocks"</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-purple-500">•</span>
+                            <span>Animated stories & characters</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-purple-500">•</span>
+                            <span>No reading required</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-purple-500">•</span>
+                            <span>10 magical adventures</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-purple-100 p-4 rounded-lg">
+                        <p class="text-purple-700 italic text-sm">"My 5-year-old thinks she's a real wizard now!" - Sarah M.</p>
+                    </div>
+                </div>
+                
+                <!-- Innovation Lab -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200 hover:shadow-xl transition-all relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <div class="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold">🏆 Most Popular</div>
+                    </div>
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">💡</span>
+                        </div>
+                        <div class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold mb-2">Ages 8-9</div>
+                        <h3 class="text-2xl font-bold text-blue-700 mb-2">Innovation Lab</h3>
+                        <p class="text-blue-600 font-semibold">Build real apps and games with Robo the Robot</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-blue-500">•</span>
+                            <span>Visual programming blocks</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-blue-500">•</span>
+                            <span>Real app development</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-blue-500">•</span>
+                            <span>Database integration</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-blue-500">•</span>
+                            <span>App store publishing</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <p class="text-blue-700 italic text-sm">"My 9-year-old built an app that's on the app store!" - Mike T.</p>
+                    </div>
+                </div>
+                
+                <!-- Professional Studio -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 hover:shadow-xl transition-all">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white text-2xl">💻</span>
+                        </div>
+                        <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold mb-2">Ages 10+</div>
+                        <h3 class="text-2xl font-bold text-green-700 mb-2">Professional Studio</h3>
+                        <p class="text-green-600 font-semibold">Real coding languages and professional tools</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">•</span>
+                            <span>Python, JavaScript, HTML/CSS</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">•</span>
+                            <span>Professional IDE</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">•</span>
+                            <span>Cloud deployment</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">•</span>
+                            <span>Industry certifications</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="text-green-700 italic text-sm">"My 12-year-old got a coding internship!" - Lisa R.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assessment Section -->
+            <div class="text-center mt-16">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Not sure which tier is perfect for your child?</h3>
+                <p class="text-gray-600 mb-6">Our smart assessment will recommend the ideal learning path based on your child's age and interests.</p>
+                <button class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition-all">
+                    🎯 Find My Child's Perfect Tier
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="py-20 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold mb-6">
+                Don't Let Your Child Fall Behind in the<br>
+                <span class="text-yellow-300">Digital Revolution</span>
+            </h2>
+            <p class="text-xl mb-8">Join 22+ families who've already given their children the ultimate advantage</p>
+            
+            <div class="bg-blue-600 rounded-xl p-6 mb-8 max-w-2xl mx-auto">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="text-orange-300 text-2xl mr-3">⚠️</span>
+                    <span class="font-bold text-lg">REALITY CHECK:</span>
+                </div>
+                <p class="text-lg">By 2030, 85% of jobs will require coding skills. Children who start now will earn <span class="text-yellow-300 font-bold">$50,000+ more annually</span> than their peers.</p>
+            </div>
+            
+            <button class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-12 py-6 rounded-xl font-bold text-xl hover:shadow-2xl transition-all transform hover:scale-105 mb-6">
+                🚀 START FREE TRIAL NOW
+            </button>
+            
+            <div class="text-center space-y-2">
+                <div class="text-orange-300 font-bold">⏰ Only 90 beta spots remaining</div>
+                <div class="flex justify-center space-x-8 text-sm">
+                    <span>💳 No Credit Card Required</span>
+                    <span>🛡️ COPPA+ Compliant</span>
+                    <span>❌ Cancel Anytime</span>
+                </div>
+                <p class="text-yellow-200 font-semibold">Limited Time: First 500 beta families get lifetime 50% discount when we launch publicly.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">✨</span>
+                        </div>
+                        <span class="text-2xl font-bold">Codopia</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Transforming children into confident programmers through magical, age-appropriate learning experiences. Where coding feels like play, but builds real skills.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors">f</a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors">t</a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors">in</a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors">yt</a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                    <div class="space-y-2">
+                        <a href="#features" class="block text-gray-400 hover:text-white transition-colors">Features</a>
+                        <a href="#curriculum" class="block text-gray-400 hover:text-white transition-colors">Curriculum</a>
+                        <a href="#pricing" class="block text-gray-400 hover:text-white transition-colors">Pricing</a>
+                        <a href="#about" class="block text-gray-400 hover:text-white transition-colors">About Us</a>
+                        <a href="#demo" class="block text-gray-400 hover:text-white transition-colors">Live Demo</a>
+                    </div>
+                </div>
+                
+                <!-- Support -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Support</h3>
+                    <div class="space-y-2">
+                        <a href="#help" class="block text-gray-400 hover:text-white transition-colors">Help Center</a>
+                        <a href="#contact" class="block text-gray-400 hover:text-white transition-colors">Contact Us</a>
+                        <a href="#community" class="block text-gray-400 hover:text-white transition-colors">Community</a>
+                        <a href="#tutorials" class="block text-gray-400 hover:text-white transition-colors">Tutorials</a>
+                        <a href="#status" class="block text-gray-400 hover:text-white transition-colors">System Status</a>
+                    </div>
+                </div>
+                
+                <!-- Stay Updated -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Stay Updated</h3>
+                    <p class="text-gray-400 mb-4">Get the latest updates on new features and coding tips for kids.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-r-lg transition-colors">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Codopia. All rights reserved. Made with ❤️ for the next generation of coders.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Form submission handling
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.email.value;
+            const age = this.age.value;
+            
+            if (!email || !age) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Here you would typically send the data to your backend
+            alert('Thank you for signing up! We\'ll be in touch soon.');
+        });
+    </script>
+</body>
+</html>
+
