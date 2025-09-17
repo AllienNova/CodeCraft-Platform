@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 8: Interactive Magic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+        }
+        .magic-workshop-container {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        .spell-block {
+            background-color: #e0f2f7;
+            border: 2px solid #a7d9ed;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .input-block {
+            background-color: #ffe0b2;
+            border-color: #ffcc80;
+        }
+        .response-block {
+            background-color: #c8e6c9;
+            border-color: #a5d6a7;
+        }
+        .conditional-block {
+            background-color: #ffcdd2;
+            border-color: #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+    <div class="magic-workshop-container">
+        <h1 class="text-3xl font-bold text-purple-700 mb-6">Module 8: Interactive Magic</h1>
+        <div id="story-area" class="mb-6 p-4 bg-gray-100 rounded-lg text-left min-h-[100px]">
+            <p class="text-gray-700">Professor Sparkle: Welcome, young wizard! Let's create a magical story together.</p>
+        </div>
+
+        <div id="spell-blocks-container" class="space-y-4">
+            <!-- Spell blocks will be rendered here -->
+        </div>
+
+        <div class="mt-6">
+            <button id="start-story-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start New Story</button>
+        </div>
+    </div>
+
+    <script>
+        const storyArea = document.getElementById('story-area');
+        const spellBlocksContainer = document.getElementById('spell-blocks-container');
+        const startStoryBtn = document.getElementById('start-story-btn');
+
+        let currentStoryStep = 0;
+        let storyData = [];
+
+        const spellBlockTemplates = {
+            'ask_question': (id, question) => `
+                <div id="block-${id}" class="spell-block input-block">
+                    <p class="font-semibold">Wizard asks:</p>
+                    <p>${question}</p>
+                    <input type="text" id="input-${id}" class="mt-2 p-2 border rounded w-full" placeholder="Type your answer here...">
+                    <button onclick="handleInput('${id}')" class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm">Submit</button>
+                </div>
+            `,
+            'say_something': (id, message) => `
+                <div id="block-${id}" class="spell-block response-block">
+                    <p class="font-semibold">Wizard says:</p>
+                    <p>${message}</p>
+                    <button onclick="nextStoryStep()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm">Continue</button>
+                </div>
+            `,
+            'conditional_response': (id, condition, ifTrue, ifFalse) => `
+                <div id="block-${id}" class="spell-block conditional-block">
+                    <p class="font-semibold">Professor Sparkle: Let's see what happens next!</p>
+                    <p>Checking if your answer was "${condition}"...</p>
+                    <button onclick="handleConditional('${id}', '${condition}', '${ifTrue}', '${ifFalse}')" class="mt-2 bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm">Reveal Outcome</button>
+                </div>
+            `
+        };
+
+        function addMessageToStory(speaker, message) {
+            storyArea.innerHTML += `<p class="text-gray-700"><strong>${speaker}:</strong> ${message}</p>`;
+            storyArea.scrollTop = storyArea.scrollHeight;
+        }
+
+        function renderSpellBlock(block) {
+            spellBlocksContainer.innerHTML = spellBlockTemplates[block.type](block.id, block.content);
+        }
+
+        function handleInput(blockId) {
+            const inputElement = document.getElementById(`input-${blockId}`);
+            const userAnswer = inputElement.value.trim();
+            addMessageToStory('You', userAnswer);
+            storyData[currentStoryStep].userAnswer = userAnswer;
+            nextStoryStep();
+        }
+
+        function handleConditional(blockId, condition, ifTrueId, ifFalseId) {
+            const previousBlock = storyData[currentStoryStep - 1];
+            const userAnswer = previousBlock ? previousBlock.userAnswer : '';
+
+            if (userAnswer.toLowerCase() === condition.toLowerCase()) {
+                addMessageToStory('Professor Sparkle', 'Your magic worked! Let\`s follow that path.');
+                currentStoryStep = storyData.findIndex(block => block.id === ifTrueId);
+            } else {
+                addMessageToStory('Professor Sparkle', 'A different path unfolds! Still magical!');
+                currentStoryStep = storyData.findIndex(block => block.id === ifFalseId);
+            }
+            renderCurrentStoryStep();
+        }
+
+        function nextStoryStep() {
+            currentStoryStep++;
+            renderCurrentStoryStep();
+        }
+
+        function renderCurrentStoryStep() {
+            if (currentStoryStep < storyData.length) {
+                renderSpellBlock(storyData[currentStoryStep]);
+            } else {
+                spellBlocksContainer.innerHTML = `<p class="text-gray-700">The story ends here! Click 
+
+
+Start New Story</button></p>`;
+                startStoryBtn.style.display = 'block';
+            }
+        }
+
+        function startNewStory() {
+            storyArea.innerHTML = 
+                `<p class="text-gray-700">Professor Sparkle: Welcome, young wizard! Let\`s create a magical story together.</p>`;
+            currentStoryStep = 0;
+            startStoryBtn.style.display = 'none';
+            // Define a simple story for demonstration
+            storyData = [
+                { id: "block1", type: "ask_question", content: "Do you want to go to the enchanted forest or the spooky castle?" },
+                { id: "block2", type: "conditional_response", content: { condition: "enchanted forest", ifTrue: "block3", ifFalse: "block4" } },
+                { id: "block3", type: "say_something", content: "Let\`s go to the enchanted forest! It\`s full of friendly creatures." },
+                { id: "block4", type: "say_something", content: "Let\`s go to the spooky castle! I hope we don\`t see any ghosts." },
+                { id: "block5", type: "ask_question", content: "What magical creature do you hope to meet?" },
+                { id: "block6", type: "say_something", content: "Wow, a [userAnswer]! That sounds amazing!" }
+            ];
+            renderCurrentStoryStep();
+        }
+
+        startStoryBtn.addEventListener("click", startNewStory);
+
+        // Initial load
+        startNewStory();
+    </script>
+</body>
+</html>
+
