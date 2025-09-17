@@ -30,35 +30,64 @@ Codopia transforms coding education through:
 - Career preparation and industry practices
 - **Lessons**: Python Fundamentals, OOP, Web Development, Mobile Apps, AI/ML, Career Prep
 
-## 🏗️ Architecture
+## 🏗️ Repository Structure
 
-### Frontend (Next.js 15)
 ```
-frontend/
-├── pages/           # Next.js app router pages
-├── components/      # Reusable React components
-├── lib/            # Utilities and configurations
-└── assets/         # Static assets and media
-```
-
-### Backend (Flask + Supabase)
-```
-backend/
-├── main.py         # Flask application entry point
-├── auth/           # Authentication services
-├── ai/             # Professor Sparkle AI tutor
-├── database/       # Supabase schema and migrations
-├── templates/      # Learning environment templates
-└── static/         # Backend static assets
-```
-
-### Documentation
-```
-docs/
-├── architecture/   # System design and migration plans
-├── deployment/     # Deployment guides and summaries
-├── api/           # API documentation and integrations
-└── curriculum/    # Educational content and lesson plans
+codopia-platform/
+├── README.md                  # This file
+├── LICENSE                    # MIT License
+├── .gitignore                # Comprehensive ignore rules
+├── requirements.txt          # Python dependencies
+├── package.json             # Node.js dependencies
+│
+├── backend/                 # Flask Backend
+│   ├── main.py             # Main Flask application
+│   ├── auth_service.py     # Authentication service
+│   ├── supabase_client.py  # Database client
+│   ├── professor_sparkle.py # AI integration
+│   ├── gemini_live_sparkle.py # Gemini Live API
+│   ├── templates/          # HTML templates
+│   │   ├── index.html      # Homepage
+│   │   ├── about.html      # About page
+│   │   ├── features.html   # Features page
+│   │   ├── pricing.html    # Pricing page
+│   │   ├── academy.html    # Academy page
+│   │   ├── magazine.html   # Magazine page
+│   │   └── learning/       # Learning modules
+│   │       └── magic_workshop.html
+│   └── static/             # Static assets
+│       ├── css/
+│       ├── js/
+│       └── images/
+│
+├── frontend/               # React/Next.js Frontend
+│   ├── components/         # React components
+│   │   ├── About.jsx
+│   │   ├── Features.jsx
+│   │   ├── Pricing.jsx
+│   │   ├── Navigation.jsx
+│   │   └── Footer.jsx
+│   ├── app/               # Next.js app directory
+│   ├── lib/               # Utility libraries
+│   ├── contexts/          # React contexts
+│   └── public/            # Public assets
+│
+├── docs/                  # Documentation
+│   ├── content/           # Content documentation
+│   │   ├── about-page-content.md
+│   │   ├── features-content.md
+│   │   ├── magazine-content.md
+│   │   └── academy-content.md
+│   ├── deployment/        # Deployment guides
+│   ├── api/              # API documentation
+│   └── user-guides/      # User guides
+│
+├── scripts/              # Utility scripts
+│   └── create_tables.py  # Database setup
+│
+└── .archive/             # Archived files
+    ├── .gitkeep
+    └── old_versions/
 ```
 
 ## 🚀 Quick Start
@@ -106,11 +135,11 @@ npx supabase db push
 
 6. **Start development servers**
 ```bash
-# Frontend (Next.js)
-npm run dev
-
 # Backend (Flask)
 cd backend && python main.py
+
+# Frontend (Next.js) - in a new terminal
+cd frontend && npm run dev
 ```
 
 ## 🧙‍♂️ Professor Sparkle AI Tutor
