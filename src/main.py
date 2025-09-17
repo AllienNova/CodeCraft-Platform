@@ -276,6 +276,27 @@ def handle_sparkle_message(data):
         print(f"❌ Error in Sparkle message: {e}")
         emit('sparkle_error', {'error': str(e)})
 
+# Missing page routes
+@app.route('/features')
+def features():
+    return render_template('features.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+@app.route('/academy')
+def academy():
+    return render_template('academy.html')
+
+@app.route('/magazine')
+def magazine():
+    return render_template('magazine.html')
+
 if __name__ == '__main__':
     print(f"🚀 Starting Codopia Platform on port {port}")
     print(f"🎭 Professor Sparkle AI: Ready")
