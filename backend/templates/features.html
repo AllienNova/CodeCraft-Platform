@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Features - Codopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button.active { 
+            background: linear-gradient(to right, #9333ea, #2563eb);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        🦄 Codopia
+                    </span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="text-gray-700 hover:text-purple-600 transition-colors">Home</a>
+                    <a href="/features" class="text-purple-600 font-semibold">Features</a>
+                    <a href="/about" class="text-gray-700 hover:text-purple-600 transition-colors">About</a>
+                    <a href="/pricing" class="text-gray-700 hover:text-purple-600 transition-colors">Pricing</a>
+                    <a href="/academy" class="text-gray-700 hover:text-purple-600 transition-colors">Academy</a>
+                    <a href="/magazine" class="text-gray-700 hover:text-purple-600 transition-colors">Magazine</a>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/signin" class="text-purple-600 hover:text-purple-800 transition-colors">Sign In</a>
+                    <a href="/signup" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">Start Free Trial</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-20 pb-16 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                <span class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Platform Features
+                </span>
+            </h1>
+            <p class="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+                Discover the comprehensive features that make Codopia the most effective 
+                and engaging coding education platform for children.
+            </p>
+        </div>
+    </section>
+
+    <!-- Feature Tabs -->
+    <section class="py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap justify-center mb-12 bg-white rounded-2xl p-2 shadow-lg">
+                <button onclick="showTab('overview')" class="tab-button active flex items-center px-6 py-3 rounded-xl font-semibold transition-all text-gray-600 hover:text-purple-600">
+                    <span class="mr-2">🌟</span>
+                    Platform Overview
+                </button>
+                <button onclick="showTab('magic')" class="tab-button flex items-center px-6 py-3 rounded-xl font-semibold transition-all text-gray-600 hover:text-purple-600">
+                    <span class="mr-2">🦄</span>
+                    Magic Workshop
+                </button>
+                <button onclick="showTab('innovation')" class="tab-button flex items-center px-6 py-3 rounded-xl font-semibold transition-all text-gray-600 hover:text-purple-600">
+                    <span class="mr-2">🚀</span>
+                    Innovation Lab
+                </button>
+                <button onclick="showTab('professional')" class="tab-button flex items-center px-6 py-3 rounded-xl font-semibold transition-all text-gray-600 hover:text-purple-600">
+                    <span class="mr-2">💻</span>
+                    Professional Studio
+                </button>
+            </div>
+
+            <!-- Platform Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🦄</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Age-Appropriate Learning</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Three distinct tiers designed specifically for different developmental stages, ensuring optimal challenge and engagement.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Magic Workshop (Ages 5-7)
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Innovation Lab (Ages 8-9)
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Professional Studio (Ages 10+)
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🎮</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Gamified Experience</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Learning feels like playing with achievement systems, progress tracking, and celebration moments.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Badge collection system
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Progress visualization
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Celebration animations
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🔒</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Safety & Privacy</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">COPPA+ compliant platform with comprehensive parental controls and child-safe interactions.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                COPPA compliance
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Parental dashboard
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Content moderation
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🚀</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Real-World Skills</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">From visual blocks to professional coding languages, children learn skills used by industry professionals.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Visual programming
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Text-based coding
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-3"></span>
+                                Professional tools
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magic Workshop Tab -->
+            <div id="magic" class="tab-content">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">✨</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Sparkle the Unicorn Guide</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Magical mascot provides encouragement, guidance, and celebrates every achievement.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Interactive character
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Encouraging messages
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Progress celebrations
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🎭</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Spell-Casting Interface</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Drag-and-drop "magic blocks" that feel like casting spells but teach real programming concepts.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Visual block programming
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Drag-and-drop interface
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Immediate feedback
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🌈</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Animated Characters</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Lovable characters like Benny Bunny and Freddy Frog respond to code and bring stories to life.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Character animations
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Interactive responses
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Story creation
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🎪</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Magical Adventures</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">10 progressive adventures that teach fundamental programming concepts through magical storytelling.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Progressive difficulty
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Story-based learning
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></span>
+                                Creative expression
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Innovation Lab Tab -->
+            <div id="innovation" class="tab-content">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🤖</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Robo the Robot Mentor</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Tech-savvy guide that introduces advanced concepts and celebrates innovation.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Advanced guidance
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Technical explanations
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Innovation encouragement
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">📱</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Real App Development</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Build actual mobile apps with databases, APIs, and user interfaces that work in the real world.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Mobile app creation
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Database integration
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                API connections
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🔧</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Visual Programming Plus</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Advanced visual blocks with real code generation, bridging visual and text-based programming.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Advanced block types
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Code generation
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Logic structures
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🌐</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Internet Integration</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Connect apps to real web services, APIs, and cloud platforms for authentic development experience.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Web service integration
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                Cloud deployment
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full mr-3"></span>
+                                API usage
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Studio Tab -->
+            <div id="professional" class="tab-content">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🧠</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">CodeMentor AI Assistant</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Intelligent AI guide that provides real-time code suggestions, debugging help, and best practices.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Code suggestions
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Error detection
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Best practices
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">💻</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Professional IDE</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Full-featured development environment with syntax highlighting, debugging, and version control.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Syntax highlighting
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Debugging tools
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Version control
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">☁️</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Cloud Deployment</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Deploy real applications to professional cloud platforms like Vercel, Netlify, and Heroku.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Multiple cloud platforms
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                One-click deployment
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Custom domains
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
+                        <div class="flex items-start mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+                                <span class="text-2xl">🔬</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Testing & DevOps</h3>
+                                <p class="text-gray-600 leading-relaxed mb-4">Learn industry-standard practices including testing, CI/CD, and professional development workflows.</p>
+                            </div>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Automated testing
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                CI/CD pipelines
+                            </li>
+                            <li class="flex items-center text-gray-700">
+                                <span class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mr-3"></span>
+                                Professional workflows
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-16 px-4 bg-gradient-to-r from-purple-600 to-blue-600">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-6">
+                Experience All Features with Your Free Trial
+            </h2>
+            <p class="text-xl text-purple-100 mb-8">
+                Discover how Codopia's comprehensive feature set transforms children into confident programmers.
+            </p>
+            <a href="/signup" class="bg-white text-purple-600 px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105 inline-block">
+                Start FREE 7-Day Trial
+            </a>
+            <p class="text-purple-200 mt-4">No credit card required • COPPA compliant • Cancel anytime</p>
+        </div>
+    </section>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
