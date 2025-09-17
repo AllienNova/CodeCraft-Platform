@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codopia Magic Workshop - Module 7: Spell Debugging</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-700 to-indigo-900 min-h-screen flex flex-col items-center justify-center text-white font-sans">
+    <div class="container mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20">
+        <h1 class="text-5xl font-bold text-center mb-6 text-yellow-300 drop-shadow-lg">Module 7: Spell Debugging</h1>
+        <p class="text-xl text-center mb-10 text-gray-200">Help the wizard fix his magical mistakes!</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Spell Block Palette -->
+            <div class="lg:col-span-1 bg-white/10 p-6 rounded-lg shadow-inner border border-white/10">
+                <h2 class="text-3xl font-semibold mb-4 text-blue-300">Magic Spell Blocks</h2>
+                <div id="spell-palette" class="space-y-3">
+                    <!-- Debugging Blocks -->
+                    <div class="spell-block debugging-block bg-red-500 hover:bg-red-600 active:bg-red-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="inspect">
+                        <span class="font-bold">Inspect</span>: See what's happening!
+                    </div>
+                    <div class="spell-block debugging-block bg-red-500 hover:bg-red-600 active:bg-red-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="step-by-step">
+                        <span class="font-bold">Step-by-Step</span>: Go slowly!
+                    </div>
+                    <div class="spell-block debugging-block bg-red-500 hover:bg-red-600 active:bg-red-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="error-highlight">
+                        <span class="font-bold">Error Highlight</span>: Find the boo-boo!
+                    </div>
+                    <!-- Existing Blocks (Examples) -->
+                    <div class="spell-block movement-block bg-green-500 hover:bg-green-600 active:bg-green-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="move-forward">
+                        <span class="font-bold">Move Forward</span>
+                    </div>
+                    <div class="spell-block action-block bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="turn-left">
+                        <span class="font-bold">Turn Left</span>
+                    </div>
+                    <div class="spell-block control-block bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition duration-200 ease-in-out transform hover:scale-105 p-3 rounded-md shadow-md cursor-grab" draggable="true" data-block-type="repeat">
+                        <span class="font-bold">Repeat</span> <input type="number" value="2" class="w-16 bg-white/20 rounded px-1 text-center text-white" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magic Stage and Code Area -->
+            <div class="lg:col-span-2 bg-white/10 p-6 rounded-lg shadow-inner border border-white/10 flex flex-col">
+                <h2 class="text-3xl font-semibold mb-4 text-green-300">Magic Stage</h2>
+                <div id="magic-stage" class="bg-gray-800 rounded-lg shadow-lg flex-grow mb-6 relative overflow-hidden">
+                    <!-- Wizard Character (Placeholder) -->
+                    <img id="wizard" src="https://via.placeholder.com/50" alt="Wizard" class="absolute transition-all duration-500 ease-in-out" style="left: 0px; top: 0px;">
+                    <!-- Treasure (Placeholder) -->
+                    <img id="treasure" src="https://via.placeholder.com/30" alt="Treasure" class="absolute" style="right: 20px; bottom: 20px;">
+                    <!-- Debugging Visuals -->
+                    <div id="debug-overlay" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <h2 class="text-3xl font-semibold mb-4 text-yellow-300">Your Spell Sequence</h2>
+                <div id="spell-sequence" class="bg-gray-700 p-4 rounded-lg shadow-inner min-h-[150px] flex flex-wrap gap-2 content-start border border-white/10">
+                    <!-- Dropped spell blocks will appear here -->
+                </div>
+
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button id="run-spell" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition duration-200 ease-in-out">Cast Spell!</button>
+                    <button id="reset-spell" class="bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition duration-200 ease-in-out">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
