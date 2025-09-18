@@ -3,763 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Workshop - Enhanced</title>
+    <title>Magic Workshop - Phase 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: white;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 25px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .magic-star {
-            color: #ffd700;
-            font-size: 28px;
-            animation: sparkle 2s infinite;
-        }
-
-        @keyframes sparkle {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(180deg); }
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            min-height: 44px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-        }
-
-        .main-container {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            height: calc(100vh - 80px);
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .sidebar {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .lesson-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 2px solid #ffd700;
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .spell-category {
-            margin-bottom: 25px;
-        }
-
-        .category-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #ffd700;
-        }
-
+        
         .spell-block {
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+            min-height: 44px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border-radius: 25px;
-            cursor: grab;
+            justify-content: center;
+            border-radius: 8px;
             font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            position: relative;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            min-height: 44px;
+            margin: 4px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
+        
         .spell-block:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-
+        
         .spell-block:active {
             cursor: grabbing;
+            transform: scale(0.95);
         }
-
-        .movement-spells .spell-block {
+        
+        .movement-spell {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
         }
-
-        .action-spells .spell-block {
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-        }
-
-        .logic-spells .spell-block {
-            background: linear-gradient(135deg, #00BCD4, #0097A7);
-            color: white;
-        }
-
-        .spell-icon {
-            font-size: 18px;
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .playground-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .playground-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .control-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-run {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-demo {
+        
+        .action-spell {
             background: linear-gradient(135deg, #FF9800, #F57C00);
             color: white;
         }
-
-        .btn-stop {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-            color: white;
-        }
-
-        .btn-clear {
-            background: linear-gradient(135deg, #757575, #616161);
-            color: white;
-        }
-
-        .content-area {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 20px;
-            flex: 1;
-        }
-
-        .spell-sequence {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sequence-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #ffd700;
-        }
-
-        .spell-sequence-area {
-            min-height: 300px;
-            border: 3px dashed rgba(255, 215, 0, 0.5);
-            border-radius: 15px;
-            padding: 15px;
-            position: relative;
-            background: rgba(255, 215, 0, 0.05);
-        }
-
-        .sequence-instructions {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 16px;
-            margin-top: 50px;
-        }
-
-        .sequence-spell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            border-radius: 25px;
-            font-weight: bold;
-            position: relative;
-            min-height: 44px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Connector arrows between spell blocks */
-        .sequence-spell::after {
-            content: "↓";
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #ffd700;
-            font-size: 20px;
-            font-weight: bold;
-            animation: flow 2s infinite;
-        }
-
-        .sequence-spell:last-child::after {
-            display: none;
-        }
-
-        @keyframes flow {
-            0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); }
-            50% { opacity: 1; transform: translateX(-50%) translateY(3px); }
-        }
-
-        .sequence-spell.executing {
-            animation: pulse 1s infinite;
-            box-shadow: 0 0 20px #ffd700;
-            border: 2px solid #ffd700;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .playground {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            gap: 2px;
-            height: 500px;
-            background: #2d3748;
-            border-radius: 15px;
-            padding: 15px;
-            position: relative;
-        }
-
-        /* Grid coordinate labels */
-        .grid::before {
-            content: "";
-            position: absolute;
-            top: -25px;
-            left: 15px;
-            right: 15px;
-            height: 20px;
-            background: linear-gradient(to right, 
-                transparent 0%, transparent 10%, 
-                rgba(255, 215, 0, 0.3) 10%, rgba(255, 215, 0, 0.3) 20%,
-                transparent 20%, transparent 30%,
-                rgba(255, 215, 0, 0.3) 30%, rgba(255, 215, 0, 0.3) 40%,
-                transparent 40%, transparent 50%,
-                rgba(255, 215, 0, 0.3) 50%, rgba(255, 215, 0, 0.3) 60%,
-                transparent 60%, transparent 70%,
-                rgba(255, 215, 0, 0.3) 70%, rgba(255, 215, 0, 0.3) 80%,
-                transparent 80%, transparent 90%,
-                rgba(255, 215, 0, 0.3) 90%, rgba(255, 215, 0, 0.3) 100%
-            );
-        }
-
-        .grid-coordinates {
-            position: absolute;
-            top: -30px;
-            left: 0;
-            right: 0;
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 2px;
-            padding: 0 15px;
-            font-size: 12px;
-            color: #ffd700;
-            text-align: center;
-        }
-
-        .grid-cell {
-            background: linear-gradient(135deg, #4a5568, #718096);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-        }
-
-        .grid-cell:hover {
-            background: linear-gradient(135deg, #718096, #a0aec0);
-            transform: scale(1.05);
-        }
-
-        .grid-cell.highlight {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            animation: glow 0.5s ease-in-out;
-            color: #2d3748;
-        }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px #ffd700; }
-            50% { box-shadow: 0 0 20px #ffd700; }
-            100% { box-shadow: 0 0 5px #ffd700; }
-        }
-
-        .wizard {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 28px;
-            transition: all 0.5s ease;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 15px rgba(229, 62, 62, 0.5);
-            width: 100%;
-            height: 100%;
-        }
-
-        .professor-sparkle-panel {
-            background: linear-gradient(135deg, #FFD700, #FFA000);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 20px;
-            color: #2d3748;
-            border: 3px solid #ff8f00;
-            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.3);
-        }
-
-        .professor-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .professor-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            border: 3px solid #2d3748;
-        }
-
-        .professor-info {
-            flex: 1;
-        }
-
-        .professor-name {
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .professor-title {
-            opacity: 0.8;
-            font-size: 14px;
-        }
-
-        .professor-message {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 16px;
-            line-height: 1.4;
-        }
-
-        .professor-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .professor-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            min-height: 40px;
-        }
-
-        .professor-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-demo-sparkle {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-question {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            color: white;
-        }
-
-        .btn-audio {
+        
+        .logic-spell {
             background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
         }
-
-        .btn-hint {
-            background: linear-gradient(135deg, #FF9800, #F57C00);
-            color: white;
-        }
-
-        .progress-section {
+                .grid-cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
-        .progress-bar {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
+        .grid-cell.preview-path {
+            background-color: rgba(255, 255, 0, 0.3);
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
         }
 
-        .progress-fill {
+        .grid-cell.preview-destination {
+            background-color: rgba(34, 197, 94, 0.4);
+            border-color: #22c55e;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+
+        .grid-cell.preview-blocked {
+            background-color: rgba(239, 68, 68, 0.4);
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        } background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .grid-cell:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .wizard {
+            font-size: 32px;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+        
+        .sequence-spell {
             background: linear-gradient(135deg, #4CAF50, #45a049);
-            height: 100%;
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        .progress-text {
-            font-weight: bold;
+            color: white;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 6px;
+            display: inline-block;
             font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
-        .voice-indicator {
-            width: 12px;
-            height: 12px;
-            background: #e53e3e;
-            border-radius: 50%;
-            animation: pulse-voice 1s infinite;
+        
+        .connector {
+            color: #FFD700;
+            font-size: 20px;
+            margin: 0 4px;
+            animation: pulse 2s infinite;
         }
-
-        .voice-indicator.hidden {
-            display: none;
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-
-        @keyframes pulse-voice {
-            0% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
-            100% { opacity: 0.5; transform: scale(1); }
+        
+        .boundary-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+            border: 3px solid white;
         }
-
-        /* Drag and drop styles */
-        .spell-sequence-area.drag-over {
-            border-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.1);
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+            width: 280px;
         }
-
-        .dragging {
-            opacity: 0.5;
-            transform: rotate(5deg);
+        
+        .sidebar.collapsed {
+            transform: translateX(-220px);
         }
-
-        /* Responsive design */
-        @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 280px 1fr;
-            }
-            
-            .content-area {
-                grid-template-columns: 350px 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr;
-            }
-            
-            .content-area {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr;
-            }
-            
-            .sidebar {
-                max-height: 300px;
-            }
+        
+        .toggle-btn {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            <span class="magic-star">✨</span>
-            Magic Workshop
+    <!-- Header -->
+    <header class="bg-black bg-opacity-20 text-white p-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">✨</span>
+                <h1 class="text-xl font-bold">Magic Workshop - Phase 2</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>Welcome, Emma!</span>
+                <button class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-bold">🏆 Spell Caster</button>
+                <button class="bg-blue-600 text-white px-3 py-1 rounded-lg">Dashboard</button>
+            </div>
         </div>
-        <div class="header-buttons">
-            <span>Welcome, Emma!</span>
-            <button class="btn btn-secondary">🏆 Spell Caster</button>
-            <button class="btn btn-primary">Dashboard</button>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- Collapsible Sidebar -->
+        <div id="sidebar" class="sidebar bg-black bg-opacity-30 text-white p-4 relative">
+            <button id="toggleSidebar" class="toggle-btn">◀</button>
+            
+            <!-- Lesson Info -->
+            <div class="bg-blue-900 bg-opacity-50 p-4 rounded-lg mb-4 border-2 border-yellow-400">
+                <div class="flex items-center mb-2">
+                    <span class="text-yellow-400 text-xl mr-2">⭐</span>
+                    <h2 class="font-bold">Lesson 2: Multi-Step Magic</h2>
+                </div>
+                <p class="text-sm text-gray-300">Learn to move multiple steps with single spells! Try the new 2-step and 3-step movement blocks.</p>
+            </div>
+
+            <!-- Movement Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">🚶</span>
+                    <h3 class="font-bold">Movement Spells</h3>
+                </div>
+                
+                <!-- Single Step Movements -->
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-up-1">
+                    <span class="mr-2">⬆️</span> Move Up 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-down-1">
+                    <span class="mr-2">⬇️</span> Move Down 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-left-1">
+                    <span class="mr-2">⬅️</span> Move Left 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-right-1">
+                    <span class="mr-2">➡️</span> Move Right 1
+                </div>
+                
+                <!-- Multi-Step Movements -->
+                <div class="mt-3 text-sm text-yellow-300 font-bold">✨ New Multi-Step Spells:</div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-up" 
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬆️</span> Move Up 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-down"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬇️</span> Move Down 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-left"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬅️</span> Move Left 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-right"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">➡️</span> Move Right 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•••••</span>
+                </div>
+            </div>
+
+            <!-- Action Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">✨</span>
+                    <h3 class="font-bold">Action Spells</h3>
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="cast-sparkles">
+                    <span class="mr-2">✨</span> Cast Sparkles
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="say-hello">
+                    <span class="mr-2">💬</span> Say Hello
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="dance">
+                    <span class="mr-2">💃</span> Dance
+                </div>
+            </div>
+
+            <!-- Logic Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">🧠</span>
+                    <h3 class="font-bold">Logic Spells</h3>
+                </div>
+                <div class="spell-block logic-spell" draggable="true" data-spell="repeat-3">
+                    <span class="mr-2">🔄</span> Repeat 3x
+                </div>
+                <div class="spell-block logic-spell" draggable="true" data-spell="if-then">
+                    <span class="mr-2">🤔</span> If... Then...
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <!-- Magical Playground -->
+            <div class="bg-black bg-opacity-20 rounded-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-2">🏰</span>
+                        <h2 class="text-white text-xl font-bold">Magical Playground</h2>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="castSpells" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">▶️ Cast Spells</button>
+                        <button id="watchDemo" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">👁️ Watch Demo</button>
+                        <button id="stopSpells" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">⏹️ Stop</button>
+                        <button id="clearSpells" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">🗑️ Clear</button>
+                        <button id="resetWizard" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">🔄 Reset Wizard</button>
+                    </div>
+                </div>
+
+                <!-- Spell Sequence Area -->
+                <div class="bg-black bg-opacity-30 rounded-lg p-4 mb-4">
+                    <div class="flex items-center mb-2">
+                        <span class="text-yellow-400 text-xl mr-2">⭐</span>
+                        <h3 class="text-white font-bold">Your Spell Sequence</h3>
+                    </div>
+                    <div id="spellSequenceArea" class="min-h-20 border-2 border-dashed border-yellow-400 rounded-lg p-4">
+                        <div id="sequenceInstructions" class="text-center text-gray-300">
+                            <span class="text-2xl">🎯</span><br>
+                            Drag spell blocks here to create your magic sequence!<br>
+                            <span class="text-sm">Try the new multi-step spells: "Move Up 2" or "Move Right 3"!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10x10 Grid -->
+                <div class="bg-black bg-opacity-30 rounded-lg p-4">
+                    <div class="grid grid-cols-10 gap-0" id="magicGrid">
+                        <!-- Grid will be generated by JavaScript -->
+                    </div>
+                    <!-- Column numbers -->
+                    <div class="grid grid-cols-10 gap-0 mt-2">
+                        <div class="text-center text-yellow-400 font-bold text-sm">1</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">2</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">3</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">4</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">5</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">6</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">7</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">8</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">9</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">10</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="lesson-card">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <span style="font-size: 24px;">⭐</span>
-                    <div>
-                        <div style="font-size: 18px; font-weight: bold;">Lesson 1: Make the Wizard Move</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Drag spell blocks to create a sequence, then watch the wizard perform your magic!</div>
-                    </div>
+    <!-- Professor Sparkle -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-400 text-black p-4">
+        <div class="flex items-center justify-between max-w-6xl mx-auto">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-3xl">
+                    👨🏿‍🏫
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg">Professor Sparkle</h3>
+                    <p class="text-sm">Your AI Magic Tutor</p>
+                    <p class="text-xs">🤖 AI Connected</p>
+                </div>
+                <div id="sparkleMessage" class="bg-white bg-opacity-20 rounded-lg p-3 max-w-md">
+                    <p class="text-sm">Welcome to Phase 2! Now you can move multiple steps with single spells. Try "Move Right 3" to move 3 cells at once! The wizard is at E1 and ready for multi-step adventures! 🌟</p>
                 </div>
             </div>
-
-            <div class="spell-category movement-spells">
-                <div class="category-title">
-                    <span>🚶</span>
-                    Movement Spells
+            <div class="flex items-center space-x-2">
+                <div class="text-right mr-4">
+                    <p class="text-xs">Progress</p>
+                    <p class="font-bold" id="progressPercent">0%</p>
                 </div>
-                <div class="spell-block" draggable="true" data-spell="move-forward" data-tooltip="Moves the wizard one step forward">
-                    <span class="spell-icon">🚶</span>
-                    Move Forward
-                </div>
-                <div class="spell-block" draggable="true" data-spell="turn-left" data-tooltip="Turns the wizard to face left">
-                    <span class="spell-icon">↺</span>
-                    Turn Left
-                </div>
-                <div class="spell-block" draggable="true" data-spell="turn-right" data-tooltip="Turns the wizard to face right">
-                    <span class="spell-icon">↻</span>
-                    Turn Right
-                </div>
-            </div>
-
-            <div class="spell-category action-spells">
-                <div class="category-title">
-                    <span>✨</span>
-                    Action Spells
-                </div>
-                <div class="spell-block" draggable="true" data-spell="cast-sparkles" data-tooltip="Creates magical sparkles">
-                    <span class="spell-icon">✨</span>
-                    Cast Sparkles
-                </div>
-                <div class="spell-block" draggable="true" data-spell="say-hello" data-tooltip="Makes the wizard say hello">
-                    <span class="spell-icon">💬</span>
-                    Say Hello
-                </div>
-                <div class="spell-block" draggable="true" data-spell="dance" data-tooltip="Makes the wizard dance">
-                    <span class="spell-icon">💃</span>
-                    Dance
-                </div>
-            </div>
-
-            <div class="spell-category logic-spells">
-                <div class="category-title">
-                    <span>🧠</span>
-                    Logic Spells
-                </div>
-                <div class="spell-block" draggable="true" data-spell="repeat-3" data-tooltip="Repeats the next spell 3 times">
-                    <span class="spell-icon">🔄</span>
-                    Repeat 3 times
-                </div>
-                <div class="spell-block" draggable="true" data-spell="if-then" data-tooltip="If condition is true, then do action">
-                    <span class="spell-icon">🤔</span>
-                    If... Then...
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="playground-header">
-                <div class="playground-title">
-                    <span>🏰</span>
-                    Magical Playground
-                </div>
-                <div class="control-buttons">
-                    <button class="btn btn-run" id="castSpells">▶️ Cast Spells</button>
-                    <button class="btn btn-demo" id="watchDemo">👁️ Watch Demo</button>
-                    <button class="btn btn-stop" id="stopSpells">⏹️ Stop</button>
-                    <button class="btn btn-clear" id="clearSpells">🗑️ Clear</button>
-                </div>
-            </div>
-
-            <div class="content-area">
-                <div class="spell-sequence">
-                    <div class="sequence-title">
-                        <span>⭐</span>
-                        Your Spell Sequence
-                    </div>
-                    <div class="spell-sequence-area" id="spellSequenceArea">
-                        <div class="sequence-instructions" id="sequenceInstructions">
-                            🎯 Drag spell blocks here to create your magic sequence!<br>
-                            <span style="font-size: 14px;">Try dragging "Move Forward" to make the wizard walk!</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="playground">
-                    <div class="grid-coordinates">
-                        <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div>
-                        <div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
-                    </div>
-                    <div class="grid" id="magicGrid">
-                        <!-- Grid cells will be generated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="professor-sparkle-panel">
-                <div class="professor-header">
-                    <div class="professor-avatar">
-                        👨🏿‍🏫
-                    </div>
-                    <div class="professor-info">
-                        <div class="professor-name">
-                            🌟 Professor Sparkle
-                            <div class="voice-indicator hidden" id="voiceIndicator"></div>
-                        </div>
-                        <div class="professor-title">Your AI Magic Tutor</div>
-                        <div id="aiStatus" style="font-size: 12px; opacity: 0.7;">🤖 AI Ready</div>
-                    </div>
-                    <div class="progress-section">
-                        <span class="progress-text">Progress</span>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <span class="progress-text" id="progressText">0%</span>
-                    </div>
-                </div>
-                
-                <div class="professor-message" id="professorMessage">
-                    Hi Emma! I'm Professor Sparkle, your magical coding tutor! 🌟 I'm here to help you learn programming through magic. 
-                    I love teaching kids like you how to code with creativity and imagination. Try dragging a "Move Forward" spell to get started, or ask me for help anytime!
-                </div>
-                
-                <div class="professor-buttons">
-                    <button class="professor-btn btn-demo-sparkle" id="showMeHow">👁️ Show Me How</button>
-                    <button class="professor-btn btn-question" id="askQuestion">🎤 Ask Question</button>
-                    <button class="professor-btn btn-audio" id="audioToggle">🔊 Audio: ON</button>
-                    <button class="professor-btn btn-hint" id="giveHint">💡 Give Hint</button>
-                </div>
+                <button id="showDemo" class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm">👁️ Show Me How</button>
+                <button id="askQuestion" class="bg-red-600 text-white px-3 py-2 rounded-lg text-sm">🎤 Ask Question</button>
+                <button id="toggleAudio" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">🔊 Audio: ON</button>
+                <button id="giveHint" class="bg-yellow-600 text-black px-3 py-2 rounded-lg text-sm">💡 Give Hint</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Global variables
+        // Game state
+        let wizardPosition = { row: 0, col: 4 }; // E1 starting position
         let spellSequence = [];
-        let wizardPosition = { x: 0, y: 0 };
-        let wizardDirection = 0; // 0: right, 1: down, 2: left, 3: up
         let isExecuting = false;
         let audioEnabled = true;
         let socket = null;
-        let aiConnected = false;
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeGrid();
-            initializeDragAndDrop();
-            initializeEventListeners();
-            initializeAI();
-            updateProgress();
-        });
+        // Initialize Socket.IO connection
+        function initializeSocket() {
+            try {
+                socket = io();
+                socket.on('connect', () => {
+                    console.log('Connected to AI server');
+                });
+                
+                socket.on('sparkle_response', (data) => {
+                    updateProfessorMessage(data.message);
+                    if (audioEnabled) {
+                        speakText(data.message);
+                    }
+                });
+                
+                socket.on('sparkle_error', (data) => {
+                    console.error('Sparkle error:', data.error);
+                    updateProfessorMessage("Sorry, I had a technical hiccup! Let me try to help you another way.");
+                });
+            } catch (error) {
+                console.log('Socket.IO not available, using fallback responses');
+            }
+        }
 
-        // Initialize the 10x10 grid
-        function initializeGrid() {
+        // Initialize the game
+        function initializeGame() {
+            createGrid();
+            updateWizardPosition();
+            setupEventListeners();
+            setupDragAndDrop();
+            initializeSocket();
+        }
+
+        // Create 10x10 grid
+        function createGrid() {
             const grid = document.getElementById('magicGrid');
             grid.innerHTML = '';
             
@@ -769,282 +449,240 @@
                     cell.className = 'grid-cell';
                     cell.dataset.row = row;
                     cell.dataset.col = col;
-                    
-                    // Add coordinate label
-                    const coord = String.fromCharCode(65 + row) + (col + 1);
-                    cell.title = coord;
-                    
-                    // Place wizard at starting position
-                    if (row === 0 && col === 0) {
-                        const wizard = document.createElement('div');
-                        wizard.className = 'wizard';
-                        wizard.innerHTML = '🧙‍♂️';
-                        wizard.id = 'wizard';
-                        cell.appendChild(wizard);
-                    }
-                    
                     grid.appendChild(cell);
                 }
             }
         }
 
-        // Initialize drag and drop functionality
-        function initializeDragAndDrop() {
+        // Update wizard position on grid
+        function updateWizardPosition() {
+            // Clear all wizards
+            document.querySelectorAll('.wizard').forEach(w => w.remove());
+            
+            // Add wizard to current position
+            const targetCell = document.querySelector(`[data-row="${wizardPosition.row}"][data-col="${wizardPosition.col}"]`);
+            if (targetCell) {
+                const wizard = document.createElement('div');
+                wizard.className = 'wizard';
+                wizard.textContent = '🧙‍♂️';
+                targetCell.appendChild(wizard);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Sidebar toggle
+            document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
+            
+            // Control buttons
+            document.getElementById('castSpells').addEventListener('click', executeSpells);
+            document.getElementById('watchDemo').addEventListener('click', watchDemo);
+            document.getElementById('stopSpells').addEventListener('click', stopExecution);
+            document.getElementById('clearSpells').addEventListener('click', clearSequence);
+            document.getElementById('resetWizard').addEventListener('click', resetWizard);
+            
+            // Professor Sparkle buttons
+            document.getElementById('showDemo').addEventListener('click', showDemo);
+            document.getElementById('askQuestion').addEventListener('click', askQuestion);
+            document.getElementById('toggleAudio').addEventListener('click', toggleAudio);
+            document.getElementById('giveHint').addEventListener('click', giveHint);
+        }
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
             const spellBlocks = document.querySelectorAll('.spell-block');
             const sequenceArea = document.getElementById('spellSequenceArea');
 
             spellBlocks.forEach(block => {
-                block.addEventListener('dragstart', handleDragStart);
-                block.addEventListener('dragend', handleDragEnd);
+                block.addEventListener("dragstart", (e) => {
+                    const spellType = e.target.dataset.spellType;
+                    const steps = e.target.querySelector(".step-selector").value;
+                    const spellId = `${spellType}-${steps}`;
+                    const spellText = `Move ${spellType.split("-")[1]} ${steps}`;
+                    const spellIcon = e.target.querySelector("span").textContent;
+
+                    e.dataTransfer.setData("text/plain", JSON.stringify({
+                        spell: spellId,
+                        text: spellText,
+                        icon: spellIcon
+                    }));
+                });
             });
 
-            sequenceArea.addEventListener('dragover', handleDragOver);
-            sequenceArea.addEventListener('drop', handleDrop);
-            sequenceArea.addEventListener('dragenter', handleDragEnter);
-            sequenceArea.addEventListener('dragleave', handleDragLeave);
-        }
+            sequenceArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                sequenceArea.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            });
 
-        function handleDragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.dataset.spell);
-            e.dataTransfer.setData('text/html', e.target.outerHTML);
-            e.target.classList.add('dragging');
-        }
+            sequenceArea.addEventListener('dragleave', (e) => {
+                sequenceArea.style.backgroundColor = '';
+            });
 
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDragEnter(e) {
-            e.preventDefault();
-            e.target.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.target.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.target.classList.remove('drag-over');
-            
-            const spellId = e.dataTransfer.getData('text/plain');
-            const spellHTML = e.dataTransfer.getData('text/html');
-            
-            if (spellId) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = spellHTML;
-                const spellElement = tempDiv.firstChild;
+            sequenceArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                sequenceArea.style.backgroundColor = '';
                 
-                const spellText = spellElement.textContent.trim();
-                const spellIcon = spellElement.querySelector('.spell-icon').textContent;
-                
-                addSpellToSequence(spellId, spellText, spellIcon);
-            }
+                try {
+                    const spellData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    addSpellToSequence(spellData.spell, spellData.text, spellData.icon);
+                } catch (error) {
+                    console.error('Error adding spell:', error);
+                }
+            });
         }
 
         // Add spell to sequence
         function addSpellToSequence(spellId, spellText, spellIcon) {
             const sequenceArea = document.getElementById('spellSequenceArea');
             const instructions = document.getElementById('sequenceInstructions');
-            
+
             // Hide instructions if this is the first spell
             if (spellSequence.length === 0) {
                 instructions.style.display = 'none';
             }
-            
+
             // Create spell element
             const spellElement = document.createElement('div');
             spellElement.className = 'sequence-spell';
             spellElement.dataset.spell = spellId;
+            spellElement.innerHTML = `<span style="font-size: 16px;">${spellIcon}</span> ${spellText}`;
             
-            // Apply appropriate styling based on spell type
-            if (spellId.includes('move') || spellId.includes('turn')) {
-                spellElement.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-            } else if (spellId.includes('cast') || spellId.includes('say') || spellId.includes('dance')) {
-                spellElement.style.background = 'linear-gradient(135deg, #FF6B35, #F7931E)';
-            } else {
-                spellElement.style.background = 'linear-gradient(135deg, #00BCD4, #0097A7)';
+            // Add connector if not first spell
+            if (spellSequence.length > 0) {
+                const connector = document.createElement('span');
+                connector.className = 'connector';
+                connector.textContent = '↓';
+                sequenceArea.appendChild(connector);
             }
-            
-            spellElement.style.color = 'white';
-            spellElement.innerHTML = `<span style="font-size: 18px;">${spellIcon}</span> ${spellText}`;
             
             sequenceArea.appendChild(spellElement);
             spellSequence.push({ id: spellId, text: spellText, icon: spellIcon });
             
             updateProgress();
-            sendToAI(`I added a ${spellText} spell to my sequence.`, {
+            
+            // Send to AI for contextual response
+            sendToAI(`I added a ${spellText} spell to my sequence. I now have ${spellSequence.length} spells total.`, {
                 action: 'spell_added',
                 spell: spellId,
                 sequence_length: spellSequence.length
             });
-            
-            console.log(`Spell added: ${spellId} Total spells: ${spellSequence.length}`);
         }
 
-        // Initialize event listeners
-        function initializeEventListeners() {
-            document.getElementById('castSpells').addEventListener('click', executeSpells);
-            document.getElementById('clearSpells').addEventListener('click', clearSequence);
-            document.getElementById('stopSpells').addEventListener('click', stopExecution);
-            document.getElementById('watchDemo').addEventListener('click', watchDemo);
-            
-            // Professor Sparkle buttons
-            document.getElementById('showMeHow').addEventListener('click', showMeHow);
-            document.getElementById('askQuestion').addEventListener('click', askQuestion);
-            document.getElementById('audioToggle').addEventListener('click', toggleAudio);
-            document.getElementById('giveHint').addEventListener('click', giveHint);
-        }
-
-        // Execute spell sequence
+        // Execute spells
         async function executeSpells() {
-            if (spellSequence.length === 0) {
-                updateProfessorMessage("You need to add some spells first! Try dragging a 'Move Forward' spell to your sequence.");
-                return;
-            }
-            
-            if (isExecuting) return;
+            if (isExecuting || spellSequence.length === 0) return;
             
             isExecuting = true;
-            const spells = document.querySelectorAll('.sequence-spell');
             
-            for (let i = 0; i < spells.length; i++) {
-                const spell = spells[i];
-                const spellId = spell.dataset.spell;
-                
-                // Highlight current spell
-                spell.classList.add('executing');
-                
-                // Execute the spell
-                await executeSpell(spellId);
-                
-                // Remove highlight
-                spell.classList.remove('executing');
-                
-                // Wait between spells
-                await sleep(500);
+            for (let i = 0; i < spellSequence.length; i++) {
+                const spell = spellSequence[i];
+                await executeSpell(spell.id);
+                await sleep(800); // Pause between spells
             }
             
             isExecuting = false;
-            sendToAI(`I executed my spell sequence with ${spellSequence.length} spells.`, {
-                action: 'sequence_executed',
-                sequence_length: spellSequence.length
+            
+            // Send completion message to AI
+            sendToAI(`I successfully executed ${spellSequence.length} spells! The wizard is now at position (${wizardPosition.row}, ${wizardPosition.col}).`, {
+                action: 'spells_executed',
+                final_position: wizardPosition,
+                spell_count: spellSequence.length
             });
         }
 
         // Execute individual spell
         async function executeSpell(spellId) {
-            console.log(`Executing spell: ${spellId}`);
+            const [action, direction, steps] = spellId.split('-');
             
-            switch (spellId) {
-                case 'move-forward':
-                    await moveWizard();
-                    break;
-                case 'turn-left':
-                    turnWizard(-1);
-                    break;
-                case 'turn-right':
-                    turnWizard(1);
-                    break;
-                case 'cast-sparkles':
-                    await castSparkles();
-                    break;
-                case 'say-hello':
-                    await sayHello();
-                    break;
-                case 'dance':
-                    await dance();
-                    break;
-            }
-            
-            await sleep(300);
-        }
-
-        // Move wizard forward
-        async function moveWizard() {
-            const directions = [
-                { x: 1, y: 0 },  // right
-                { x: 0, y: 1 },  // down
-                { x: -1, y: 0 }, // left
-                { x: 0, y: -1 }  // up
-            ];
-            
-            const direction = directions[wizardDirection];
-            const newX = wizardPosition.x + direction.x;
-            const newY = wizardPosition.y + direction.y;
-            
-            // Check bounds
-            if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
-                // Remove wizard from current position
-                const currentCell = document.querySelector(`[data-row="${wizardPosition.y}"][data-col="${wizardPosition.x}"]`);
-                const wizard = currentCell.querySelector('.wizard');
-                if (wizard) {
-                    wizard.remove();
+            if (action === 'move') {
+                const stepCount = parseInt(steps) || 1;
+                
+                for (let i = 0; i < stepCount; i++) {
+                    const newPosition = calculateNewPosition(direction);
+                    
+                    if (isValidPosition(newPosition)) {
+                        wizardPosition = newPosition;
+                        updateWizardPosition();
+                        await sleep(300); // Animation delay for each step
+                    } else {
+                        showBoundaryWarning(direction, stepCount, i + 1);
+                        break; // Stop if boundary hit
+                    }
                 }
-                
-                // Add wizard to new position
-                const newCell = document.querySelector(`[data-row="${newY}"][data-col="${newX}"]`);
-                const newWizard = document.createElement('div');
-                newWizard.className = 'wizard';
-                newWizard.innerHTML = '🧙‍♂️';
-                newWizard.id = 'wizard';
-                newCell.appendChild(newWizard);
-                
-                // Update position
-                wizardPosition.x = newX;
-                wizardPosition.y = newY;
-                
-                // Highlight the new cell briefly
-                newCell.classList.add('highlight');
-                setTimeout(() => newCell.classList.remove('highlight'), 500);
+            } else if (action === 'cast' && direction === 'sparkles') {
+                // Cast sparkles animation
+                showSparkles();
+            } else if (action === 'say' && direction === 'hello') {
+                // Say hello
+                if (audioEnabled) {
+                    speakText("Hello! I'm learning magic!");
+                }
+            } else if (action === 'dance') {
+                // Dance animation
+                animateDance();
             }
         }
 
-        // Turn wizard
-        function turnWizard(direction) {
-            wizardDirection = (wizardDirection + direction + 4) % 4;
-            const wizard = document.getElementById('wizard');
-            if (wizard) {
-                wizard.style.transform = `rotate(${wizardDirection * 90}deg)`;
+        // Calculate new position based on direction
+        function calculateNewPosition(direction) {
+            const newPos = { ...wizardPosition };
+            
+            switch (direction) {
+                case 'up': newPos.row--; break;
+                case 'down': newPos.row++; break;
+                case 'left': newPos.col--; break;
+                case 'right': newPos.col++; break;
             }
+            
+            return newPos;
         }
 
-        // Cast sparkles effect
-        async function castSparkles() {
-            const wizard = document.getElementById('wizard');
-            if (wizard) {
-                wizard.innerHTML = '✨';
-                await sleep(1000);
-                wizard.innerHTML = '🧙‍♂️';
-            }
+        // Check if position is valid (within grid bounds)
+        function isValidPosition(position) {
+            return position.row >= 0 && position.row < 10 && 
+                   position.col >= 0 && position.col < 10;
         }
 
-        // Say hello
-        async function sayHello() {
-            updateProfessorMessage("The wizard says: Hello, magical world! 👋");
-            if (audioEnabled) {
-                speak("Hello, magical world!");
-            }
+        // Show boundary warning
+        function showBoundaryWarning(direction, totalSteps, completedSteps) {
+            const warning = document.createElement('div');
+            warning.className = 'boundary-warning';
+            warning.innerHTML = `
+                <div style="font-size: 24px; margin-bottom: 10px;">🚫</div>
+                <div style="font-size: 18px; margin-bottom: 5px;">Can't move ${direction}!</div>
+                <div style="font-size: 14px;">The wizard completed ${completedSteps} of ${totalSteps} steps before hitting the boundary.</div>
+            `;
+            
+            document.body.appendChild(warning);
+            
+            // Remove warning after 3 seconds
+            setTimeout(() => {
+                warning.remove();
+            }, 3000);
+            
+            // Send to AI
+            sendToAI(`The wizard hit a boundary while trying to move ${direction}. Completed ${completedSteps} of ${totalSteps} steps.`, {
+                action: 'boundary_hit',
+                direction: direction,
+                completed_steps: completedSteps,
+                total_steps: totalSteps
+            });
         }
 
-        // Dance
-        async function dance() {
-            const wizard = document.getElementById('wizard');
-            if (wizard) {
-                wizard.style.animation = 'pulse 0.5s ease-in-out 3';
-                wizard.innerHTML = '💃';
-                await sleep(1500);
-                wizard.innerHTML = '🧙‍♂️';
-                wizard.style.animation = '';
-            }
+        // Reset wizard to starting position
+        function resetWizard() {
+            wizardPosition = { row: 0, col: 4 }; // E1
+            updateWizardPosition();
+            
+            sendToAI("I reset the wizard back to the starting position E1!", {
+                action: 'wizard_reset',
+                position: wizardPosition
+            });
         }
 
-        // Clear sequence
+        // Clear spell sequence
         function clearSequence() {
+            spellSequence = [];
             const sequenceArea = document.getElementById('spellSequenceArea');
             const instructions = document.getElementById('sequenceInstructions');
             
@@ -1052,195 +690,261 @@
             sequenceArea.appendChild(instructions);
             instructions.style.display = 'block';
             
-            spellSequence = [];
             updateProgress();
-            
-            updateProfessorMessage("Sequence cleared! Ready to create a new magical spell sequence. ✨");
         }
 
-        // Stop execution
-        function stopExecution() {
-            isExecuting = false;
-            const executingSpells = document.querySelectorAll('.sequence-spell.executing');
-            executingSpells.forEach(spell => spell.classList.remove('executing'));
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebar');
             
-            updateProfessorMessage("Spell execution stopped! You can modify your sequence and try again. 🛑");
-        }
-
-        // Watch demo
-        function watchDemo() {
-            updateProfessorMessage("Watch carefully! I'll show you how to make the wizard move forward and turn. ✨");
-            
-            // Clear current sequence
-            clearSequence();
-            
-            // Add demo spells
-            setTimeout(() => {
-                addSpellToSequence('move-forward', '🚶 Move Forward', '🚶');
-            }, 1000);
-            
-            setTimeout(() => {
-                addSpellToSequence('turn-right', '↻ Turn Right', '↻');
-            }, 2000);
-            
-            setTimeout(() => {
-                addSpellToSequence('move-forward', '🚶 Move Forward', '🚶');
-            }, 3000);
-            
-            setTimeout(() => {
-                executeSpells();
-            }, 4000);
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
         }
 
         // Professor Sparkle functions
-        function showMeHow() {
-            sendToAI("Can you show me how to make the wizard move?", {
+        function showDemo() {
+            sendToAI("Please show me how to use the multi-step movement spells!", {
                 action: 'show_demo',
-                current_sequence: spellSequence
+                lesson: 'multi_step_movement'
             });
         }
 
         function askQuestion() {
-            sendToAI("I have a question about making the wizard move. Can you help me understand what I should do next?", {
+            sendToAI("I have a question about the multi-step movement spells. How do they work?", {
                 action: 'ask_question',
-                question_type: 'general_help'
+                topic: 'multi_step_spells'
             });
         }
 
         function giveHint() {
-            sendToAI("Can you give me a hint about what to do next?", {
+            sendToAI("Can you give me a hint about using multi-step spells effectively?", {
                 action: 'give_hint',
-                current_sequence: spellSequence,
-                wizard_position: wizardPosition
+                context: 'multi_step_movement'
             });
         }
 
         function toggleAudio() {
             audioEnabled = !audioEnabled;
-            const button = document.getElementById('audioToggle');
-            button.innerHTML = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+            const btn = document.getElementById('toggleAudio');
+            btn.textContent = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+        }
+
+        // Grid preview functionality
+        function showMovementPreview(blockElement) {
+            const spellType = blockElement.dataset.spellType;
+            const stepSelector = blockElement.querySelector('.step-selector');
+            const steps = parseInt(stepSelector.value);
+            const direction = spellType.split('-')[1]; // Extract direction from 'move-up', 'move-down', etc.
             
-            updateProfessorMessage(audioEnabled ? 
-                "Audio is now ON! I'll speak my messages to you. 🔊" : 
-                "Audio is now OFF. I'll only show text messages. 🔇"
-            );
+            // Calculate preview path
+            const previewPath = calculateMovementPath(direction, steps);
+            
+            // Highlight the path on the grid
+            highlightGridPath(previewPath);
         }
 
-        // AI Integration
-        function initializeAI() {
-            try {
-                socket = io();
+        function hideMovementPreview() {
+            // Remove all preview highlights
+            const gridCells = document.querySelectorAll('.grid-cell');
+            gridCells.forEach(cell => {
+                cell.classList.remove('preview-path', 'preview-destination', 'preview-blocked');
+            });
+        }
+
+        function calculateMovementPath(direction, steps) {
+            const currentPos = { ...wizardPosition };
+            const path = [];
+            let blocked = false;
+            
+            for (let i = 1; i <= steps; i++) {
+                const newPos = { ...currentPos };
                 
-                socket.on('connect', function() {
-                    console.log('Connected to AI server');
-                    aiConnected = true;
-                    document.getElementById('aiStatus').textContent = '🤖 AI Connected';
-                    
-                    // Initialize AI session
-                    socket.emit('init_sparkle', {
-                        child_name: 'Emma',
-                        child_age: 8,
-                        tier: 'magic_workshop'
+                switch (direction) {
+                    case 'up': newPos.row--; break;
+                    case 'down': newPos.row++; break;
+                    case 'left': newPos.col--; break;
+                    case 'right': newPos.col++; break;
+                }
+                
+                // Check if position is valid
+                if (newPos.row >= 0 && newPos.row < 10 && newPos.col >= 0 && newPos.col < 10) {
+                    path.push({
+                        row: newPos.row,
+                        col: newPos.col,
+                        step: i,
+                        isDestination: i === steps,
+                        isBlocked: false
                     });
-                });
-                
-                socket.on('disconnect', function() {
-                    console.log('Disconnected from AI server');
-                    aiConnected = false;
-                    document.getElementById('aiStatus').textContent = '🤖 AI Disconnected';
-                });
-                
-                socket.on('sparkle_response', function(data) {
-                    updateProfessorMessage(data.message);
-                    if (audioEnabled && data.message) {
-                        speak(data.message);
-                    }
-                });
-                
-                socket.on('ai_error', function(data) {
-                    console.log('❌ AI Error:', data.error);
-                    document.getElementById('aiStatus').textContent = '❌ AI Error';
-                });
-                
-            } catch (error) {
-                console.log('AI initialization failed:', error);
-                aiConnected = false;
-                document.getElementById('aiStatus').textContent = '❌ AI Error';
+                    currentPos.row = newPos.row;
+                    currentPos.col = newPos.col;
+                } else {
+                    // Hit boundary
+                    blocked = true;
+                    path.push({
+                        row: newPos.row,
+                        col: newPos.col,
+                        step: i,
+                        isDestination: false,
+                        isBlocked: true
+                    });
+                    break;
+                }
             }
+            
+            return path;
         }
 
+        function highlightGridPath(path) {
+            path.forEach(pathStep => {
+                if (pathStep.row >= 0 && pathStep.row < 10 && pathStep.col >= 0 && pathStep.col < 10) {
+                    const cellIndex = pathStep.row * 10 + pathStep.col;
+                    const cell = document.querySelector(`[data-cell="${cellIndex}"]`);
+                    
+                    if (cell) {
+                        if (pathStep.isDestination && !pathStep.isBlocked) {
+                            cell.classList.add('preview-destination');
+                        } else {
+                            cell.classList.add('preview-path');
+                        }
+                    }
+                } else if (pathStep.isBlocked) {
+                    // Show blocked indicator (outside grid)
+                    // We can add a visual indicator for blocked moves
+                }
+            });
+        }
+
+        // Update step counter visual indicator
+        function updateStepCounter(selectElement) {
+            const stepCount = parseInt(selectElement.value);
+            const stepCounter = selectElement.parentElement.querySelector('.step-counter');
+            
+            // Create visual dots based on step count
+            let dots = '';
+            for (let i = 0; i < stepCount; i++) {
+                dots += '•';
+            }
+            
+            stepCounter.textContent = dots;
+        }
+
+        // Send message to AI
         function sendToAI(message, context = {}) {
-            if (aiConnected && socket) {
+            if (socket && socket.connected) {
                 socket.emit('sparkle_message', {
                     message: message,
-                    context: context
+                    context: {
+                        ...context,
+                        wizard_position: wizardPosition,
+                        spell_sequence: spellSequence,
+                        lesson: 'multi_step_movement'
+                    }
                 });
                 return true;
             } else {
-                console.log('AI not connected, using fallback response');
-                handleFallbackResponse(context.action);
+                // Fallback responses for Phase 2
+                const responses = {
+                    'spell_added': [
+                        `Great choice! Multi-step spells are powerful magic! 🌟`,
+                        `Excellent! You're learning to move efficiently with fewer spells!`,
+                        `Perfect! Multi-step spells help you reach distant places quickly!`
+                    ],
+                    'show_demo': [
+                        `Watch this! I'll show you how "Move Right 3" moves the wizard 3 cells in one spell! ✨`,
+                        `Let me demonstrate multi-step magic! One spell, multiple moves!`
+                    ],
+                    'ask_question': [
+                        `Multi-step spells are like taking bigger steps! "Move Up 2" moves 2 cells instead of 1!`,
+                        `Think of it as magical efficiency - why use 3 spells when 1 can do the job?`
+                    ],
+                    'give_hint': [
+                        `💡 Hint: Use "Move Right 3" to quickly cross the grid, or "Move Up 2" to jump over obstacles!`,
+                        `💡 Try combining single-step and multi-step spells for complex paths!`
+                    ]
+                };
+                
+                const responseArray = responses[context.action] || [
+                    "Multi-step spells are amazing! Try moving 2 or 3 steps at once! 🌟"
+                ];
+                
+                const response = responseArray[Math.floor(Math.random() * responseArray.length)];
+                updateProfessorMessage(response);
+                
+                if (audioEnabled) {
+                    speakText(response);
+                }
                 return false;
             }
         }
 
-        function handleFallbackResponse(action) {
-            let response = "";
-            
-            switch (action) {
-                case 'spell_added':
-                    response = `Great! You added a spell. Your sequence is growing! Click 'Cast Spells' when ready.`;
-                    break;
-                case 'show_demo':
-                    response = `Watch carefully! I'll show you how to create a simple sequence. Try adding 'Move Forward' first!`;
-                    break;
-                case 'ask_question':
-                    response = `I'm here to help! Try dragging the 'Move Forward' spell to the sequence area, then click 'Cast Spells'!`;
-                    break;
-                case 'give_hint':
-                    response = `💡 Hint: Try adding 3 'Move Forward' spells to complete the lesson goal!`;
-                    break;
-                default:
-                    response = `I'm here to help you learn magical programming! Try dragging a spell to your sequence.`;
-            }
-            
-            updateProfessorMessage(response);
-        }
-
         // Update Professor Sparkle message
         function updateProfessorMessage(message) {
-            document.getElementById('professorMessage').textContent = message;
+            const messageElement = document.getElementById('sparkleMessage');
+            messageElement.innerHTML = `<p class="text-sm">${message}</p>`;
         }
 
         // Text-to-speech
-        function speak(text) {
+        function speakText(text) {
             if ('speechSynthesis' in window && audioEnabled) {
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = 0.9;
                 utterance.pitch = 1.1;
                 utterance.volume = 0.8;
-                
-                const voiceIndicator = document.getElementById('voiceIndicator');
-                voiceIndicator.classList.remove('hidden');
-                
-                utterance.onend = function() {
-                    voiceIndicator.classList.add('hidden');
-                };
-                
                 speechSynthesis.speak(utterance);
             }
         }
 
         // Update progress
         function updateProgress() {
-            const progress = Math.min((spellSequence.length / 5) * 100, 100);
-            document.getElementById('progressFill').style.width = progress + '%';
-            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            const progress = Math.min(100, (spellSequence.length / 5) * 100);
+            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
         }
 
-        // Utility function
+        // Utility functions
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
+
+        function showSparkles() {
+            // Add sparkle animation
+            const wizard = document.querySelector('.wizard');
+            if (wizard) {
+                wizard.style.animation = 'pulse 0.5s ease-in-out 3';
+                setTimeout(() => {
+                    wizard.style.animation = '';
+                }, 1500);
+            }
+        }
+
+        function animateDance() {
+            const wizard = document.querySelector('.wizard');
+            if (wizard) {
+                wizard.style.animation = 'bounce 0.3s ease-in-out 6';
+                setTimeout(() => {
+                    wizard.style.animation = '';
+                }, 1800);
+            }
+        }
+
+        function stopExecution() {
+            isExecuting = false;
+        }
+
+        function watchDemo() {
+            // Auto-add demo sequence
+            clearSequence();
+            addSpellToSequence('move-right-2', 'Move Right 2', '➡️➡️');
+            addSpellToSequence('move-up-3', 'Move Up 3', '⬆️⬆️⬆️');
+            addSpellToSequence('move-left-1', 'Move Left 1', '⬅️');
+            
+            setTimeout(() => {
+                executeSpells();
+            }, 1000);
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', initializeGame);
     </script>
 </body>
 </html>
