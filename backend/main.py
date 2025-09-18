@@ -239,7 +239,7 @@ def magic_workshop():
 
 @app.route('/learning/magic_workshop_phase2')
 def magic_workshop_phase2():
-    return render_template("learning/magic_workshop_enhanced.html")
+    return render_template("learning/magic_workshop_loops.html")
 
 # Socket.IO events for Professor Sparkle
 @socketio.on('init_sparkle')
