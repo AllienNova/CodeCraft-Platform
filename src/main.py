@@ -235,7 +235,7 @@ def dashboard():
 
 @app.route('/learning/magic-workshop')
 def magic_workshop():
-    return render_template('learning/magic_workshop_real_ai.html')
+    return render_template('learning/magic_workshop_enhanced.html')
 
 # Socket.IO events for Professor Sparkle
 @socketio.on('init_sparkle')

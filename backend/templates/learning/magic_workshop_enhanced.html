@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Workshop - Enhanced</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .magic-star {
+            color: #ffd700;
+            font-size: 28px;
+            animation: sparkle 2s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            min-height: 44px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: calc(100vh - 80px);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lesson-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .spell-category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .spell-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 25px;
+            cursor: grab;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            min-height: 44px;
+        }
+
+        .spell-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .spell-block:active {
+            cursor: grabbing;
+        }
+
+        .movement-spells .spell-block {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .action-spells .spell-block {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+        }
+
+        .logic-spells .spell-block {
+            background: linear-gradient(135deg, #00BCD4, #0097A7);
+            color: white;
+        }
+
+        .spell-icon {
+            font-size: 18px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .playground-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .playground-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-demo {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #757575, #616161);
+            color: white;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .spell-sequence {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sequence-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .spell-sequence-area {
+            min-height: 300px;
+            border: 3px dashed rgba(255, 215, 0, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .sequence-instructions {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            margin-top: 50px;
+        }
+
+        .sequence-spell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            position: relative;
+            min-height: 44px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Connector arrows between spell blocks */
+        .sequence-spell::after {
+            content: "↓";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffd700;
+            font-size: 20px;
+            font-weight: bold;
+            animation: flow 2s infinite;
+        }
+
+        .sequence-spell:last-child::after {
+            display: none;
+        }
+
+        @keyframes flow {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(3px); }
+        }
+
+        .sequence-spell.executing {
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 20px #ffd700;
+            border: 2px solid #ffd700;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .playground {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 2px;
+            height: 500px;
+            background: #2d3748;
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Grid coordinate labels */
+        .grid::before {
+            content: "";
+            position: absolute;
+            top: -25px;
+            left: 15px;
+            right: 15px;
+            height: 20px;
+            background: linear-gradient(to right, 
+                transparent 0%, transparent 10%, 
+                rgba(255, 215, 0, 0.3) 10%, rgba(255, 215, 0, 0.3) 20%,
+                transparent 20%, transparent 30%,
+                rgba(255, 215, 0, 0.3) 30%, rgba(255, 215, 0, 0.3) 40%,
+                transparent 40%, transparent 50%,
+                rgba(255, 215, 0, 0.3) 50%, rgba(255, 215, 0, 0.3) 60%,
+                transparent 60%, transparent 70%,
+                rgba(255, 215, 0, 0.3) 70%, rgba(255, 215, 0, 0.3) 80%,
+                transparent 80%, transparent 90%,
+                rgba(255, 215, 0, 0.3) 90%, rgba(255, 215, 0, 0.3) 100%
+            );
+        }
+
+        .grid-coordinates {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            right: 0;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .grid-cell {
+            background: linear-gradient(135deg, #4a5568, #718096);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .grid-cell:hover {
+            background: linear-gradient(135deg, #718096, #a0aec0);
+            transform: scale(1.05);
+        }
+
+        .grid-cell.highlight {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            animation: glow 0.5s ease-in-out;
+            color: #2d3748;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #ffd700; }
+            50% { box-shadow: 0 0 20px #ffd700; }
+            100% { box-shadow: 0 0 5px #ffd700; }
+        }
+
+        .wizard {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            transition: all 0.5s ease;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 15px rgba(229, 62, 62, 0.5);
+            width: 100%;
+            height: 100%;
+        }
+
+        .professor-sparkle-panel {
+            background: linear-gradient(135deg, #FFD700, #FFA000);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #2d3748;
+            border: 3px solid #ff8f00;
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .professor-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .professor-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            border: 3px solid #2d3748;
+        }
+
+        .professor-info {
+            flex: 1;
+        }
+
+        .professor-name {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .professor-title {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .professor-message {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .professor-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .professor-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            min-height: 40px;
+        }
+
+        .professor-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-demo-sparkle {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-question {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: white;
+        }
+
+        .btn-audio {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-hint {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .progress-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .voice-indicator {
+            width: 12px;
+            height: 12px;
+            background: #e53e3e;
+            border-radius: 50%;
+            animation: pulse-voice 1s infinite;
+        }
+
+        .voice-indicator.hidden {
+            display: none;
+        }
+
+        @keyframes pulse-voice {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+
+        /* Drag and drop styles */
+        .spell-sequence-area.drag-over {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr;
+            }
+            
+            .content-area {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .content-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .sidebar {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <span class="magic-star">✨</span>
+            Magic Workshop
+        </div>
+        <div class="header-buttons">
+            <span>Welcome, Emma!</span>
+            <button class="btn btn-secondary">🏆 Spell Caster</button>
+            <button class="btn btn-primary">Dashboard</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="lesson-card">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <span style="font-size: 24px;">⭐</span>
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold;">Lesson 1: Make the Wizard Move</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Drag spell blocks to create a sequence, then watch the wizard perform your magic!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spell-category movement-spells">
+                <div class="category-title">
+                    <span>🚶</span>
+                    Movement Spells
+                </div>
+                <div class="spell-block" draggable="true" data-spell="move-forward" data-tooltip="Moves the wizard one step forward">
+                    <span class="spell-icon">🚶</span>
+                    Move Forward
+                </div>
+                <div class="spell-block" draggable="true" data-spell="turn-left" data-tooltip="Turns the wizard to face left">
+                    <span class="spell-icon">↺</span>
+                    Turn Left
+                </div>
+                <div class="spell-block" draggable="true" data-spell="turn-right" data-tooltip="Turns the wizard to face right">
+                    <span class="spell-icon">↻</span>
+                    Turn Right
+                </div>
+            </div>
+
+            <div class="spell-category action-spells">
+                <div class="category-title">
+                    <span>✨</span>
+                    Action Spells
+                </div>
+                <div class="spell-block" draggable="true" data-spell="cast-sparkles" data-tooltip="Creates magical sparkles">
+                    <span class="spell-icon">✨</span>
+                    Cast Sparkles
+                </div>
+                <div class="spell-block" draggable="true" data-spell="say-hello" data-tooltip="Makes the wizard say hello">
+                    <span class="spell-icon">💬</span>
+                    Say Hello
+                </div>
+                <div class="spell-block" draggable="true" data-spell="dance" data-tooltip="Makes the wizard dance">
+                    <span class="spell-icon">💃</span>
+                    Dance
+                </div>
+            </div>
+
+            <div class="spell-category logic-spells">
+                <div class="category-title">
+                    <span>🧠</span>
+                    Logic Spells
+                </div>
+                <div class="spell-block" draggable="true" data-spell="repeat-3" data-tooltip="Repeats the next spell 3 times">
+                    <span class="spell-icon">🔄</span>
+                    Repeat 3 times
+                </div>
+                <div class="spell-block" draggable="true" data-spell="if-then" data-tooltip="If condition is true, then do action">
+                    <span class="spell-icon">🤔</span>
+                    If... Then...
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="playground-header">
+                <div class="playground-title">
+                    <span>🏰</span>
+                    Magical Playground
+                </div>
+                <div class="control-buttons">
+                    <button class="btn btn-run" id="castSpells">▶️ Cast Spells</button>
+                    <button class="btn btn-demo" id="watchDemo">👁️ Watch Demo</button>
+                    <button class="btn btn-stop" id="stopSpells">⏹️ Stop</button>
+                    <button class="btn btn-clear" id="clearSpells">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="spell-sequence">
+                    <div class="sequence-title">
+                        <span>⭐</span>
+                        Your Spell Sequence
+                    </div>
+                    <div class="spell-sequence-area" id="spellSequenceArea">
+                        <div class="sequence-instructions" id="sequenceInstructions">
+                            🎯 Drag spell blocks here to create your magic sequence!<br>
+                            <span style="font-size: 14px;">Try dragging "Move Forward" to make the wizard walk!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="playground">
+                    <div class="grid-coordinates">
+                        <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div>
+                        <div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+                    </div>
+                    <div class="grid" id="magicGrid">
+                        <!-- Grid cells will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="professor-sparkle-panel">
+                <div class="professor-header">
+                    <div class="professor-avatar">
+                        👨🏿‍🏫
+                    </div>
+                    <div class="professor-info">
+                        <div class="professor-name">
+                            🌟 Professor Sparkle
+                            <div class="voice-indicator hidden" id="voiceIndicator"></div>
+                        </div>
+                        <div class="professor-title">Your AI Magic Tutor</div>
+                        <div id="aiStatus" style="font-size: 12px; opacity: 0.7;">🤖 AI Ready</div>
+                    </div>
+                    <div class="progress-section">
+                        <span class="progress-text">Progress</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">0%</span>
+                    </div>
+                </div>
+                
+                <div class="professor-message" id="professorMessage">
+                    Hi Emma! I'm Professor Sparkle, your magical coding tutor! 🌟 I'm here to help you learn programming through magic. 
+                    I love teaching kids like you how to code with creativity and imagination. Try dragging a "Move Forward" spell to get started, or ask me for help anytime!
+                </div>
+                
+                <div class="professor-buttons">
+                    <button class="professor-btn btn-demo-sparkle" id="showMeHow">👁️ Show Me How</button>
+                    <button class="professor-btn btn-question" id="askQuestion">🎤 Ask Question</button>
+                    <button class="professor-btn btn-audio" id="audioToggle">🔊 Audio: ON</button>
+                    <button class="professor-btn btn-hint" id="giveHint">💡 Give Hint</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let spellSequence = [];
+        let wizardPosition = { x: 0, y: 0 };
+        let wizardDirection = 0; // 0: right, 1: down, 2: left, 3: up
+        let isExecuting = false;
+        let audioEnabled = true;
+        let socket = null;
+        let aiConnected = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGrid();
+            initializeDragAndDrop();
+            initializeEventListeners();
+            initializeAI();
+            updateProgress();
+        });
+
+        // Initialize the 10x10 grid
+        function initializeGrid() {
+            const grid = document.getElementById('magicGrid');
+            grid.innerHTML = '';
+            
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Add coordinate label
+                    const coord = String.fromCharCode(65 + row) + (col + 1);
+                    cell.title = coord;
+                    
+                    // Place wizard at starting position
+                    if (row === 0 && col === 0) {
+                        const wizard = document.createElement('div');
+                        wizard.className = 'wizard';
+                        wizard.innerHTML = '🧙‍♂️';
+                        wizard.id = 'wizard';
+                        cell.appendChild(wizard);
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Initialize drag and drop functionality
+        function initializeDragAndDrop() {
+            const spellBlocks = document.querySelectorAll('.spell-block');
+            const sequenceArea = document.getElementById('spellSequenceArea');
+
+            spellBlocks.forEach(block => {
+                block.addEventListener('dragstart', handleDragStart);
+                block.addEventListener('dragend', handleDragEnd);
+            });
+
+            sequenceArea.addEventListener('dragover', handleDragOver);
+            sequenceArea.addEventListener('drop', handleDrop);
+            sequenceArea.addEventListener('dragenter', handleDragEnter);
+            sequenceArea.addEventListener('dragleave', handleDragLeave);
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.spell);
+            e.dataTransfer.setData('text/html', e.target.outerHTML);
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.target.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const spellId = e.dataTransfer.getData('text/plain');
+            const spellHTML = e.dataTransfer.getData('text/html');
+            
+            if (spellId) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = spellHTML;
+                const spellElement = tempDiv.firstChild;
+                
+                const spellText = spellElement.textContent.trim();
+                const spellIcon = spellElement.querySelector('.spell-icon').textContent;
+                
+                addSpellToSequence(spellId, spellText, spellIcon);
+            }
+        }
+
+        // Add spell to sequence
+        function addSpellToSequence(spellId, spellText, spellIcon) {
+            const sequenceArea = document.getElementById('spellSequenceArea');
+            const instructions = document.getElementById('sequenceInstructions');
+            
+            // Hide instructions if this is the first spell
+            if (spellSequence.length === 0) {
+                instructions.style.display = 'none';
+            }
+            
+            // Create spell element
+            const spellElement = document.createElement('div');
+            spellElement.className = 'sequence-spell';
+            spellElement.dataset.spell = spellId;
+            
+            // Apply appropriate styling based on spell type
+            if (spellId.includes('move') || spellId.includes('turn')) {
+                spellElement.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+            } else if (spellId.includes('cast') || spellId.includes('say') || spellId.includes('dance')) {
+                spellElement.style.background = 'linear-gradient(135deg, #FF6B35, #F7931E)';
+            } else {
+                spellElement.style.background = 'linear-gradient(135deg, #00BCD4, #0097A7)';
+            }
+            
+            spellElement.style.color = 'white';
+            spellElement.innerHTML = `<span style="font-size: 18px;">${spellIcon}</span> ${spellText}`;
+            
+            sequenceArea.appendChild(spellElement);
+            spellSequence.push({ id: spellId, text: spellText, icon: spellIcon });
+            
+            updateProgress();
+            sendToAI(`I added a ${spellText} spell to my sequence.`, {
+                action: 'spell_added',
+                spell: spellId,
+                sequence_length: spellSequence.length
+            });
+            
+            console.log(`Spell added: ${spellId} Total spells: ${spellSequence.length}`);
+        }
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            document.getElementById('castSpells').addEventListener('click', executeSpells);
+            document.getElementById('clearSpells').addEventListener('click', clearSequence);
+            document.getElementById('stopSpells').addEventListener('click', stopExecution);
+            document.getElementById('watchDemo').addEventListener('click', watchDemo);
+            
+            // Professor Sparkle buttons
+            document.getElementById('showMeHow').addEventListener('click', showMeHow);
+            document.getElementById('askQuestion').addEventListener('click', askQuestion);
+            document.getElementById('audioToggle').addEventListener('click', toggleAudio);
+            document.getElementById('giveHint').addEventListener('click', giveHint);
+        }
+
+        // Execute spell sequence
+        async function executeSpells() {
+            if (spellSequence.length === 0) {
+                updateProfessorMessage("You need to add some spells first! Try dragging a 'Move Forward' spell to your sequence.");
+                return;
+            }
+            
+            if (isExecuting) return;
+            
+            isExecuting = true;
+            const spells = document.querySelectorAll('.sequence-spell');
+            
+            for (let i = 0; i < spells.length; i++) {
+                const spell = spells[i];
+                const spellId = spell.dataset.spell;
+                
+                // Highlight current spell
+                spell.classList.add('executing');
+                
+                // Execute the spell
+                await executeSpell(spellId);
+                
+                // Remove highlight
+                spell.classList.remove('executing');
+                
+                // Wait between spells
+                await sleep(500);
+            }
+            
+            isExecuting = false;
+            sendToAI(`I executed my spell sequence with ${spellSequence.length} spells.`, {
+                action: 'sequence_executed',
+                sequence_length: spellSequence.length
+            });
+        }
+
+        // Execute individual spell
+        async function executeSpell(spellId) {
+            console.log(`Executing spell: ${spellId}`);
+            
+            switch (spellId) {
+                case 'move-forward':
+                    await moveWizard();
+                    break;
+                case 'turn-left':
+                    turnWizard(-1);
+                    break;
+                case 'turn-right':
+                    turnWizard(1);
+                    break;
+                case 'cast-sparkles':
+                    await castSparkles();
+                    break;
+                case 'say-hello':
+                    await sayHello();
+                    break;
+                case 'dance':
+                    await dance();
+                    break;
+            }
+            
+            await sleep(300);
+        }
+
+        // Move wizard forward
+        async function moveWizard() {
+            const directions = [
+                { x: 1, y: 0 },  // right
+                { x: 0, y: 1 },  // down
+                { x: -1, y: 0 }, // left
+                { x: 0, y: -1 }  // up
+            ];
+            
+            const direction = directions[wizardDirection];
+            const newX = wizardPosition.x + direction.x;
+            const newY = wizardPosition.y + direction.y;
+            
+            // Check bounds
+            if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                // Remove wizard from current position
+                const currentCell = document.querySelector(`[data-row="${wizardPosition.y}"][data-col="${wizardPosition.x}"]`);
+                const wizard = currentCell.querySelector('.wizard');
+                if (wizard) {
+                    wizard.remove();
+                }
+                
+                // Add wizard to new position
+                const newCell = document.querySelector(`[data-row="${newY}"][data-col="${newX}"]`);
+                const newWizard = document.createElement('div');
+                newWizard.className = 'wizard';
+                newWizard.innerHTML = '🧙‍♂️';
+                newWizard.id = 'wizard';
+                newCell.appendChild(newWizard);
+                
+                // Update position
+                wizardPosition.x = newX;
+                wizardPosition.y = newY;
+                
+                // Highlight the new cell briefly
+                newCell.classList.add('highlight');
+                setTimeout(() => newCell.classList.remove('highlight'), 500);
+            }
+        }
+
+        // Turn wizard
+        function turnWizard(direction) {
+            wizardDirection = (wizardDirection + direction + 4) % 4;
+            const wizard = document.getElementById('wizard');
+            if (wizard) {
+                wizard.style.transform = `rotate(${wizardDirection * 90}deg)`;
+            }
+        }
+
+        // Cast sparkles effect
+        async function castSparkles() {
+            const wizard = document.getElementById('wizard');
+            if (wizard) {
+                wizard.innerHTML = '✨';
+                await sleep(1000);
+                wizard.innerHTML = '🧙‍♂️';
+            }
+        }
+
+        // Say hello
+        async function sayHello() {
+            updateProfessorMessage("The wizard says: Hello, magical world! 👋");
+            if (audioEnabled) {
+                speak("Hello, magical world!");
+            }
+        }
+
+        // Dance
+        async function dance() {
+            const wizard = document.getElementById('wizard');
+            if (wizard) {
+                wizard.style.animation = 'pulse 0.5s ease-in-out 3';
+                wizard.innerHTML = '💃';
+                await sleep(1500);
+                wizard.innerHTML = '🧙‍♂️';
+                wizard.style.animation = '';
+            }
+        }
+
+        // Clear sequence
+        function clearSequence() {
+            const sequenceArea = document.getElementById('spellSequenceArea');
+            const instructions = document.getElementById('sequenceInstructions');
+            
+            sequenceArea.innerHTML = '';
+            sequenceArea.appendChild(instructions);
+            instructions.style.display = 'block';
+            
+            spellSequence = [];
+            updateProgress();
+            
+            updateProfessorMessage("Sequence cleared! Ready to create a new magical spell sequence. ✨");
+        }
+
+        // Stop execution
+        function stopExecution() {
+            isExecuting = false;
+            const executingSpells = document.querySelectorAll('.sequence-spell.executing');
+            executingSpells.forEach(spell => spell.classList.remove('executing'));
+            
+            updateProfessorMessage("Spell execution stopped! You can modify your sequence and try again. 🛑");
+        }
+
+        // Watch demo
+        function watchDemo() {
+            updateProfessorMessage("Watch carefully! I'll show you how to make the wizard move forward and turn. ✨");
+            
+            // Clear current sequence
+            clearSequence();
+            
+            // Add demo spells
+            setTimeout(() => {
+                addSpellToSequence('move-forward', '🚶 Move Forward', '🚶');
+            }, 1000);
+            
+            setTimeout(() => {
+                addSpellToSequence('turn-right', '↻ Turn Right', '↻');
+            }, 2000);
+            
+            setTimeout(() => {
+                addSpellToSequence('move-forward', '🚶 Move Forward', '🚶');
+            }, 3000);
+            
+            setTimeout(() => {
+                executeSpells();
+            }, 4000);
+        }
+
+        // Professor Sparkle functions
+        function showMeHow() {
+            sendToAI("Can you show me how to make the wizard move?", {
+                action: 'show_demo',
+                current_sequence: spellSequence
+            });
+        }
+
+        function askQuestion() {
+            sendToAI("I have a question about making the wizard move. Can you help me understand what I should do next?", {
+                action: 'ask_question',
+                question_type: 'general_help'
+            });
+        }
+
+        function giveHint() {
+            sendToAI("Can you give me a hint about what to do next?", {
+                action: 'give_hint',
+                current_sequence: spellSequence,
+                wizard_position: wizardPosition
+            });
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const button = document.getElementById('audioToggle');
+            button.innerHTML = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+            
+            updateProfessorMessage(audioEnabled ? 
+                "Audio is now ON! I'll speak my messages to you. 🔊" : 
+                "Audio is now OFF. I'll only show text messages. 🔇"
+            );
+        }
+
+        // AI Integration
+        function initializeAI() {
+            try {
+                socket = io();
+                
+                socket.on('connect', function() {
+                    console.log('Connected to AI server');
+                    aiConnected = true;
+                    document.getElementById('aiStatus').textContent = '🤖 AI Connected';
+                    
+                    // Initialize AI session
+                    socket.emit('init_sparkle', {
+                        child_name: 'Emma',
+                        child_age: 8,
+                        tier: 'magic_workshop'
+                    });
+                });
+                
+                socket.on('disconnect', function() {
+                    console.log('Disconnected from AI server');
+                    aiConnected = false;
+                    document.getElementById('aiStatus').textContent = '🤖 AI Disconnected';
+                });
+                
+                socket.on('sparkle_response', function(data) {
+                    updateProfessorMessage(data.message);
+                    if (audioEnabled && data.message) {
+                        speak(data.message);
+                    }
+                });
+                
+                socket.on('ai_error', function(data) {
+                    console.log('❌ AI Error:', data.error);
+                    document.getElementById('aiStatus').textContent = '❌ AI Error';
+                });
+                
+            } catch (error) {
+                console.log('AI initialization failed:', error);
+                aiConnected = false;
+                document.getElementById('aiStatus').textContent = '❌ AI Error';
+            }
+        }
+
+        function sendToAI(message, context = {}) {
+            if (aiConnected && socket) {
+                socket.emit('sparkle_message', {
+                    message: message,
+                    context: context
+                });
+                return true;
+            } else {
+                console.log('AI not connected, using fallback response');
+                handleFallbackResponse(context.action);
+                return false;
+            }
+        }
+
+        function handleFallbackResponse(action) {
+            let response = "";
+            
+            switch (action) {
+                case 'spell_added':
+                    response = `Great! You added a spell. Your sequence is growing! Click 'Cast Spells' when ready.`;
+                    break;
+                case 'show_demo':
+                    response = `Watch carefully! I'll show you how to create a simple sequence. Try adding 'Move Forward' first!`;
+                    break;
+                case 'ask_question':
+                    response = `I'm here to help! Try dragging the 'Move Forward' spell to the sequence area, then click 'Cast Spells'!`;
+                    break;
+                case 'give_hint':
+                    response = `💡 Hint: Try adding 3 'Move Forward' spells to complete the lesson goal!`;
+                    break;
+                default:
+                    response = `I'm here to help you learn magical programming! Try dragging a spell to your sequence.`;
+            }
+            
+            updateProfessorMessage(response);
+        }
+
+        // Update Professor Sparkle message
+        function updateProfessorMessage(message) {
+            document.getElementById('professorMessage').textContent = message;
+        }
+
+        // Text-to-speech
+        function speak(text) {
+            if ('speechSynthesis' in window && audioEnabled) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = 0.8;
+                
+                const voiceIndicator = document.getElementById('voiceIndicator');
+                voiceIndicator.classList.remove('hidden');
+                
+                utterance.onend = function() {
+                    voiceIndicator.classList.add('hidden');
+                };
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Update progress
+        function updateProgress() {
+            const progress = Math.min((spellSequence.length / 5) * 100, 100);
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+        }
+
+        // Utility function
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
+
