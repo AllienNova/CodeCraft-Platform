@@ -237,6 +237,10 @@ def dashboard():
 def magic_workshop():
     return render_template('learning/magic_workshop_improved.html')
 
+@app.route('/learning/magic_workshop_phase2')
+def magic_workshop_phase2():
+    return render_template('learning/magic_workshop_phase2.html')
+
 # Socket.IO events for Professor Sparkle
 @socketio.on('init_sparkle')
 def handle_init_sparkle():
