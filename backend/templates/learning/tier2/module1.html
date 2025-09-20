@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Lab - Module 1: Code Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tier2.css') }}">
+    <style>
+        /* Tier 2 Hybrid Visual-Text Styles */
+        .tier2-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        }
+        
+        .visual-block {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: 2px solid #2563eb;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .visual-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            border-color: #60a5fa;
+        }
+        
+        .visual-block.logic-block {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: #f59e0b;
+        }
+        
+        .visual-block.action-block {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+        }
+        
+        .code-preview {
+            background: #1e1e1e;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #e5e7eb;
+            font-size: 12px;
+            margin-top: 4px;
+            padding: 4px 8px;
+            opacity: 0.8;
+        }
+        
+        .syntax-keyword { color: #c678dd; }
+        .syntax-method { color: #61dafb; }
+        .syntax-number { color: #d19a66; }
+        .syntax-string { color: #98c379; }
+        
+        .code-workspace {
+            background: #f8fafc;
+            border: 3px dashed #cbd5e1;
+            border-radius: 12px;
+            min-height: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .code-workspace.drag-over {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .generated-code {
+            background: #0f172a;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #e2e8f0;
+        }
+        
+        .robot-grid {
+            background: linear-gradient(45deg, #f1f5f9 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f1f5f9 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f1f5f9 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        .grid-cell-tier2 {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .grid-cell-tier2:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        .robot-character {
+            font-size: 2.5rem;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
+        }
+        
+        .achievement-badge {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border: 2px solid #6b7280;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+        
+        .achievement-badge.unlocked {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-color: #fbbf24;
+            opacity: 1;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+            to { box-shadow: 0 0 20px rgba(251, 191, 36, 0.8); }
+        }
+        
+        .challenge-card-tier2 {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .challenge-card-tier2:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .challenge-card-tier2.active {
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen tier2-gradient">
+    <!-- Header -->
+    <header class="bg-black bg-opacity-20 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="text-white hover:text-blue-200 mr-4">
+                        <span class="text-2xl">◀</span>
+                    </button>
+                    <h1 class="text-2xl font-bold text-white">🔬 Innovation Lab - Module 1: Code Builder</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white">Welcome, Engineer!</span>
+                    <button class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-400">
+                        🏆 Code Builder
+                    </button>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            
+            <!-- Left Sidebar - Visual Code Blocks -->
+            <div class="lg:w-1/4 space-y-4">
+                <!-- Lesson Info -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 text-white">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">⭐</span>
+                        <h2 class="text-lg font-bold">Lesson 1: Visual Code Builder</h2>
+                    </div>
+                    <p class="text-sm text-blue-100">Build programs by combining visual blocks that generate real code! Watch your blocks turn into actual programming commands.</p>
+                </div>
+
+                <!-- Movement Blocks -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <h3 class="text-white font-bold mb-3 flex items-center">
+                        <span class="text-xl mr-2">🚶</span>
+                        Movement Blocks
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="visual-block p-3 cursor-pointer" draggable="true" data-command="move_up" data-code="robot.moveUp()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">⬆️</span>
+                                <span>Move Up</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">moveUp</span>()
+                            </div>
+                        </div>
+                        <div class="visual-block p-3 cursor-pointer" draggable="true" data-command="move_down" data-code="robot.moveDown()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">⬇️</span>
+                                <span>Move Down</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">moveDown</span>()
+                            </div>
+                        </div>
+                        <div class="visual-block p-3 cursor-pointer" draggable="true" data-command="move_left" data-code="robot.moveLeft()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">⬅️</span>
+                                <span>Move Left</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">moveLeft</span>()
+                            </div>
+                        </div>
+                        <div class="visual-block p-3 cursor-pointer" draggable="true" data-command="move_right" data-code="robot.moveRight()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">➡️</span>
+                                <span>Move Right</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">moveRight</span>()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Blocks -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <h3 class="text-white font-bold mb-3 flex items-center">
+                        <span class="text-xl mr-2">⚡</span>
+                        Action Blocks
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="visual-block action-block p-3 cursor-pointer" draggable="true" data-command="beep" data-code="robot.beep()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">🔊</span>
+                                <span>Make Sound</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">beep</span>()
+                            </div>
+                        </div>
+                        <div class="visual-block action-block p-3 cursor-pointer" draggable="true" data-command="light_on" data-code="robot.lightOn()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">💡</span>
+                                <span>Turn Light On</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">lightOn</span>()
+                            </div>
+                        </div>
+                        <div class="visual-block action-block p-3 cursor-pointer" draggable="true" data-command="celebrate" data-code="robot.celebrate()">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">🎉</span>
+                                <span>Celebrate</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">robot</span>.<span class="syntax-method">celebrate</span>()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logic Blocks -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <h3 class="text-white font-bold mb-3 flex items-center">
+                        <span class="text-xl mr-2">🧠</span>
+                        Logic Blocks
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="visual-block logic-block p-3 cursor-pointer" draggable="true" data-command="repeat_3" data-code="for i in range(3):">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">🔄</span>
+                                <span>Repeat 3 Times</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">for</span> i <span class="syntax-keyword">in</span> <span class="syntax-method">range</span>(<span class="syntax-number">3</span>):
+                            </div>
+                        </div>
+                        <div class="visual-block logic-block p-3 cursor-pointer" draggable="true" data-command="if_can_move" data-code="if robot.canMove():">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">❓</span>
+                                <span>If Can Move</span>
+                            </div>
+                            <div class="code-preview">
+                                <span class="syntax-keyword">if</span> <span class="syntax-keyword">robot</span>.<span class="syntax-method">canMove</span>():
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Area - Hybrid Visual-Code Workspace -->
+            <div class="lg:w-3/4 space-y-6">
+                
+                <!-- Visual Program Builder -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white font-bold flex items-center">
+                            <span class="text-2xl mr-2">🔧</span>
+                            Visual Program Builder
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button id="runProgram" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                                <span class="mr-2">▶️</span>
+                                Run Program
+                            </button>
+                            <button id="clearProgram" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center">
+                                <span class="mr-2">🗑️</span>
+                                Clear
+                            </button>
+                            <button id="resetRobot" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center">
+                                <span class="mr-2">🔄</span>
+                                Reset Robot
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Visual Workspace -->
+                    <div class="code-workspace p-6 mb-4" id="visualWorkspace">
+                        <div class="text-gray-500 text-center">
+                            <div class="text-4xl mb-2">🎯</div>
+                            <div class="text-lg font-bold mb-2">Drag Visual Blocks Here!</div>
+                            <div class="text-sm">Build your program by dragging blocks from the sidebar</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generated Code Display -->
+                    <div class="generated-code p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="text-blue-400 font-bold mr-2">📝 Generated Code:</span>
+                            <span class="text-gray-400 text-sm">(This is the real code your visual blocks create!)</span>
+                        </div>
+                        <div id="generatedCode" class="font-mono text-sm">
+                            <div class="text-gray-500"># Your visual blocks will generate real Python code here!</div>
+                            <div class="text-gray-500"># Try dragging a "Move Right" block to see the magic happen!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Robot Playground -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <h3 class="text-white font-bold mb-4 flex items-center">
+                        <span class="text-2xl mr-2">🤖</span>
+                        Robot Playground
+                    </h3>
+                    
+                    <!-- Grid -->
+                    <div class="robot-grid p-4 rounded-lg mb-4">
+                        <div class="grid grid-cols-8 gap-0 w-fit mx-auto" id="robotGrid">
+                            <!-- Grid cells will be generated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Robot Status -->
+                    <div class="bg-black bg-opacity-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-white font-bold">🤖 Robot Status</h4>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-green-400">🟢 Online</span>
+                                <span id="robotPosition" class="text-blue-400">Position: (4, 4)</span>
+                            </div>
+                        </div>
+                        <div id="robotOutput" class="text-gray-300 text-sm h-20 overflow-y-auto">
+                            <div class="text-green-400">🤖 Robot initialized and ready for commands!</div>
+                            <div class="text-blue-400">💡 Tip: Drag visual blocks to build your program, then click "Run Program"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Programming Challenges -->
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white font-bold flex items-center">
+                            <span class="text-2xl mr-2">🎯</span>
+                            Engineering Challenges
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-blue-200 text-sm">Progress:</span>
+                            <div class="bg-gray-700 rounded-full h-2 w-24">
+                                <div id="challengeProgress" class="bg-blue-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="challengeScore" class="text-blue-400 font-bold">0/9 ⭐</span>
+                        </div>
+                    </div>
+
+                    <!-- Challenge Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Beginner Challenge 1 -->
+                        <div class="challenge-card-tier2 p-4" data-challenge="visual_builder">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-gray-800 font-bold">🌟 Visual Builder</h4>
+                                <div class="flex">
+                                    <span class="star text-yellow-400" data-star="1">⭐</span>
+                                    <span class="star text-gray-300" data-star="2">⭐</span>
+                                    <span class="star text-gray-300" data-star="3">⭐</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3">Create your first program using visual blocks!</p>
+                            <div class="challenge-goals text-xs text-gray-500 mb-3">
+                                <div>⭐ Drag one movement block (1 star)</div>
+                                <div>⭐⭐ Run your first program (2 stars)</div>
+                                <div>⭐⭐⭐ Add an action block (3 stars)</div>
+                            </div>
+                            <button class="challenge-btn bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700" onclick="startChallenge('visual_builder')">Start Challenge</button>
+                        </div>
+
+                        <!-- Beginner Challenge 2 -->
+                        <div class="challenge-card-tier2 p-4" data-challenge="code_reader">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-gray-800 font-bold">🌟 Code Reader</h4>
+                                <div class="flex">
+                                    <span class="star text-gray-300" data-star="1">⭐</span>
+                                    <span class="star text-gray-300" data-star="2">⭐</span>
+                                    <span class="star text-gray-300" data-star="3">⭐</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3">Learn to read the generated code from your visual blocks!</p>
+                            <div class="challenge-goals text-xs text-gray-500 mb-3">
+                                <div>⭐ Identify robot.moveRight() (1 star)</div>
+                                <div>⭐⭐ Explain what the code does (2 stars)</div>
+                                <div>⭐⭐⭐ Predict the robot's path (3 stars)</div>
+                            </div>
+                            <button class="challenge-btn bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700" onclick="startChallenge('code_reader')">Start Challenge</button>
+                        </div>
+
+                        <!-- Intermediate Challenge -->
+                        <div class="challenge-card-tier2 p-4" data-challenge="loop_engineer">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-gray-800 font-bold">🔥 Loop Engineer</h4>
+                                <div class="flex">
+                                    <span class="star text-gray-300" data-star="1">⭐</span>
+                                    <span class="star text-gray-300" data-star="2">⭐</span>
+                                    <span class="star text-gray-300" data-star="3">⭐</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3">Use the "Repeat 3 Times" block to create efficient programs!</p>
+                            <div class="challenge-goals text-xs text-gray-500 mb-3">
+                                <div>⭐ Create a loop block (1 star)</div>
+                                <div>⭐⭐ Add commands inside loop (2 stars)</div>
+                                <div>⭐⭐⭐ Understand the generated code (3 stars)</div>
+                            </div>
+                            <button class="challenge-btn bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700" onclick="startChallenge('loop_engineer')">Start Challenge</button>
+                        </div>
+                    </div>
+
+                    <!-- Achievement Badges -->
+                    <div class="mt-6 p-4 bg-black bg-opacity-30 rounded-lg">
+                        <h4 class="text-white font-bold mb-3 flex items-center">
+                            <span class="text-2xl mr-2">🏆</span>
+                            Engineering Badges - Module 1: Code Builder
+                        </h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="achievement-badge" data-achievement="first-drag">
+                                <div class="text-2xl mb-1">🎯</div>
+                                <div class="text-xs text-white">First Drag</div>
+                            </div>
+                            <div class="achievement-badge" data-achievement="code-reader">
+                                <div class="text-2xl mb-1">📖</div>
+                                <div class="text-xs text-white">Code Reader</div>
+                            </div>
+                            <div class="achievement-badge" data-achievement="loop-master">
+                                <div class="text-2xl mb-1">🔄</div>
+                                <div class="text-xs text-white">Loop Master</div>
+                            </div>
+                            <div class="achievement-badge" data-achievement="engineer">
+                                <div class="text-2xl mb-1">🔧</div>
+                                <div class="text-xs text-white">Engineer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant - Code Mentor -->
+    <div class="fixed bottom-4 right-4 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 max-w-sm">
+        <div class="flex items-center mb-2">
+            <div class="robot-character mr-3">🤖</div>
+            <div>
+                <h4 class="text-white font-bold">Code Mentor</h4>
+                <p class="text-xs text-blue-200">Your AI Engineering Assistant</p>
+                <div class="text-xs text-green-400">🤖 AI Connected</div>
+            </div>
+        </div>
+        <div class="bg-black bg-opacity-50 rounded p-3 mb-3 text-sm text-blue-100" id="mentorMessage">
+            Welcome to the Innovation Lab! 🔬 Ready to build your first program? Try dragging the "Move Right" block to see how visual blocks create real code! 🚀
+        </div>
+        <div class="text-xs text-blue-200 mb-2">Progress: <span id="mentorProgress">0%</span></div>
+        <div class="flex space-x-2">
+            <button class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 flex-1">💡 Hint</button>
+            <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 flex-1">❓ Help</button>
+            <button class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700 flex-1">🔊 Audio</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/tier2_module1.js') }}"></script>
+    <script>
+        // Tier 2 Hybrid Visual-Text Programming Interface
+        let robot = {
+            x: 4,
+            y: 4,
+            direction: 'right'
+        };
+
+        let visualBlocks = [];
+        let isRunning = false;
+
+        // Initialize grid
+        function initializeGrid() {
+            const grid = document.getElementById('robotGrid');
+            grid.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell-tier2 w-16 h-16 flex items-center justify-center text-3xl';
+                    cell.id = `cell-${col}-${row}`;
+                    
+                    if (col === robot.x && row === robot.y) {
+                        cell.innerHTML = '<div class="robot-character">🤖</div>';
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Drag and drop functionality for visual blocks
+        document.querySelectorAll('[draggable="true"]').forEach(block => {
+            block.addEventListener('dragstart', (e) => {
+                const blockData = {
+                    command: e.target.dataset.command,
+                    code: e.target.dataset.code,
+                    html: e.target.outerHTML
+                };
+                e.dataTransfer.setData('text/plain', JSON.stringify(blockData));
+            });
+        });
+
+        const workspace = document.getElementById('visualWorkspace');
+        workspace.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            workspace.classList.add('drag-over');
+        });
+
+        workspace.addEventListener('dragleave', (e) => {
+            workspace.classList.remove('drag-over');
+        });
+
+        workspace.addEventListener('drop', (e) => {
+            e.preventDefault();
+            workspace.classList.remove('drag-over');
+            
+            const blockData = JSON.parse(e.dataTransfer.getData('text/plain'));
+            addVisualBlock(blockData);
+            unlockAchievement('first-drag');
+        });
+
+        function addVisualBlock(blockData) {
+            visualBlocks.push(blockData);
+            updateVisualWorkspace();
+            updateGeneratedCode();
+            
+            // Update mentor message
+            document.getElementById('mentorMessage').innerHTML = 
+                `Great job! 🎉 You added a visual block! Notice how it generated real code: <code>${blockData.code}</code>. Try adding more blocks or click "Run Program" to see it in action!`;
+        }
+
+        function updateVisualWorkspace() {
+            const workspace = document.getElementById('visualWorkspace');
+            
+            if (visualBlocks.length === 0) {
+                workspace.innerHTML = `
+                    <div class="text-gray-500 text-center">
+                        <div class="text-4xl mb-2">🎯</div>
+                        <div class="text-lg font-bold mb-2">Drag Visual Blocks Here!</div>
+                        <div class="text-sm">Build your program by dragging blocks from the sidebar</div>
+                    </div>
+                `;
+            } else {
+                workspace.innerHTML = '';
+                visualBlocks.forEach((block, index) => {
+                    const blockElement = document.createElement('div');
+                    blockElement.className = 'mb-3 flex items-center';
+                    blockElement.innerHTML = `
+                        <div class="bg-white rounded-lg p-3 flex-1 flex items-center shadow-lg">
+                            <span class="text-gray-600 font-bold mr-2">${index + 1}.</span>
+                            <div class="flex-1">${block.html}</div>
+                            <button onclick="removeBlock(${index})" class="ml-2 text-red-500 hover:text-red-700 font-bold">✕</button>
+                        </div>
+                    `;
+                    workspace.appendChild(blockElement);
+                });
+            }
+        }
+
+        function updateGeneratedCode() {
+            const codeDisplay = document.getElementById('generatedCode');
+            
+            if (visualBlocks.length === 0) {
+                codeDisplay.innerHTML = `
+                    <div class="text-gray-500"># Your visual blocks will generate real Python code here!</div>
+                    <div class="text-gray-500"># Try dragging a "Move Right" block to see the magic happen!</div>
+                `;
+            } else {
+                let codeLines = [];
+                let indentLevel = 0;
+                
+                visualBlocks.forEach((block, index) => {
+                    const indent = '    '.repeat(indentLevel);
+                    
+                    if (block.command.includes('repeat') || block.command.includes('if')) {
+                        codeLines.push(`<div class="text-blue-300">${indent}${block.code}</div>`);
+                        indentLevel++;
+                    } else {
+                        codeLines.push(`<div class="text-green-300">${indent}${block.code}</div>`);
+                    }
+                });
+                
+                codeDisplay.innerHTML = codeLines.join('');
+            }
+        }
+
+        function removeBlock(index) {
+            visualBlocks.splice(index, 1);
+            updateVisualWorkspace();
+            updateGeneratedCode();
+        }
+
+        // Program execution
+        document.getElementById('runProgram').addEventListener('click', runProgram);
+        document.getElementById('clearProgram').addEventListener('click', clearProgram);
+        document.getElementById('resetRobot').addEventListener('click', resetRobot);
+
+        async function runProgram() {
+            if (isRunning || visualBlocks.length === 0) return;
+            
+            isRunning = true;
+            const output = document.getElementById('robotOutput');
+            output.innerHTML = '<div class="text-green-400">🚀 Running your visual program...</div>';
+            
+            for (let i = 0; i < visualBlocks.length; i++) {
+                const block = visualBlocks[i];
+                await executeCommand(block.command);
+                await sleep(800); // Pause between commands
+            }
+            
+            output.innerHTML += '<div class="text-blue-400">✅ Program execution complete!</div>';
+            isRunning = false;
+            
+            unlockAchievement('code-reader');
+        }
+
+        async function executeCommand(command) {
+            const output = document.getElementById('robotOutput');
+            
+            if (command.includes('move_right')) {
+                if (robot.x < 7) {
+                    robot.x++;
+                    updateRobotPosition();
+                    output.innerHTML += `<div class="text-yellow-400">🤖 Robot moved right to (${robot.x}, ${robot.y})</div>`;
+                } else {
+                    output.innerHTML += '<div class="text-red-400">⚠️ Cannot move right - at edge!</div>';
+                }
+            } else if (command.includes('move_left')) {
+                if (robot.x > 0) {
+                    robot.x--;
+                    updateRobotPosition();
+                    output.innerHTML += `<div class="text-yellow-400">🤖 Robot moved left to (${robot.x}, ${robot.y})</div>`;
+                } else {
+                    output.innerHTML += '<div class="text-red-400">⚠️ Cannot move left - at edge!</div>';
+                }
+            } else if (command.includes('move_up')) {
+                if (robot.y > 0) {
+                    robot.y--;
+                    updateRobotPosition();
+                    output.innerHTML += `<div class="text-yellow-400">🤖 Robot moved up to (${robot.x}, ${robot.y})</div>`;
+                } else {
+                    output.innerHTML += '<div class="text-red-400">⚠️ Cannot move up - at edge!</div>';
+                }
+            } else if (command.includes('move_down')) {
+                if (robot.y < 7) {
+                    robot.y++;
+                    updateRobotPosition();
+                    output.innerHTML += `<div class="text-yellow-400">🤖 Robot moved down to (${robot.x}, ${robot.y})</div>`;
+                } else {
+                    output.innerHTML += '<div class="text-red-400">⚠️ Cannot move down - at edge!</div>';
+                }
+            } else if (command.includes('beep')) {
+                output.innerHTML += '<div class="text-green-400">🔊 BEEP! Robot made a sound!</div>';
+            } else if (command.includes('light_on')) {
+                output.innerHTML += '<div class="text-blue-400">💡 Robot light turned on!</div>';
+            } else if (command.includes('celebrate')) {
+                output.innerHTML += '<div class="text-purple-400">🎉 Robot is celebrating!</div>';
+            }
+            
+            output.scrollTop = output.scrollHeight;
+            document.getElementById('robotPosition').textContent = `Position: (${robot.x}, ${robot.y})`;
+        }
+
+        function updateRobotPosition() {
+            // Clear all cells
+            document.querySelectorAll('.grid-cell-tier2').forEach(cell => {
+                cell.innerHTML = '';
+            });
+            
+            // Place robot at new position
+            const cell = document.getElementById(`cell-${robot.x}-${robot.y}`);
+            if (cell) {
+                cell.innerHTML = '<div class="robot-character">🤖</div>';
+            }
+        }
+
+        function clearProgram() {
+            visualBlocks = [];
+            updateVisualWorkspace();
+            updateGeneratedCode();
+            document.getElementById('robotOutput').innerHTML = '<div class="text-green-400">🗑️ Program cleared. Ready for new blocks!</div>';
+        }
+
+        function resetRobot() {
+            robot.x = 4;
+            robot.y = 4;
+            updateRobotPosition();
+            document.getElementById('robotOutput').innerHTML = '<div class="text-blue-400">🔄 Robot reset to starting position (4, 4)</div>';
+            document.getElementById('robotPosition').textContent = 'Position: (4, 4)';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Challenge system
+        function startChallenge(challengeId) {
+            const challenges = {
+                'visual_builder': {
+                    title: 'Visual Builder',
+                    description: 'Create your first program using visual blocks! Drag a movement block to the workspace.'
+                },
+                'code_reader': {
+                    title: 'Code Reader', 
+                    description: 'Learn to read the generated code! Look at how your visual blocks create real programming commands.'
+                },
+                'loop_engineer': {
+                    title: 'Loop Engineer',
+                    description: 'Use the "Repeat 3 Times" block to create efficient programs!'
+                }
+            };
+            
+            const challenge = challenges[challengeId];
+            if (challenge) {
+                document.getElementById('mentorMessage').innerHTML = `🎯 Challenge: ${challenge.title}<br>${challenge.description}`;
+                
+                // Highlight the challenge card
+                document.querySelectorAll('.challenge-card-tier2').forEach(card => {
+                    card.classList.remove('active');
+                });
+                document.querySelector(`[data-challenge="${challengeId}"]`).classList.add('active');
+            }
+        }
+
+        // Achievement system
+        function unlockAchievement(achievementId) {
+            const badge = document.querySelector(`[data-achievement="${achievementId}"]`);
+            if (badge && !badge.classList.contains('unlocked')) {
+                badge.classList.add('unlocked');
+                
+                // Show achievement notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-yellow-500 text-black p-4 rounded-lg shadow-lg z-50';
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-2">🏆</span>
+                        <div>
+                            <div class="font-bold">Achievement Unlocked!</div>
+                            <div class="text-sm">${achievementId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // Initialize the interface
+        initializeGrid();
+        updateVisualWorkspace();
+        updateGeneratedCode();
+    </script>
+</body>
+</html>
+

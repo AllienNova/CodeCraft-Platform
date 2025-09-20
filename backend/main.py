@@ -241,6 +241,108 @@ def magic_workshop():
 def magic_workshop_phase2():
     return render_template("learning/magic_workshop_loops.html")
 
+@app.route('/learning/<tier>/<module>')
+def learning_module(tier, module):
+    """Dynamic routing for tier-based learning modules"""
+    try:
+        # Validate tier
+        valid_tiers = ['tier1', 'tier2', 'tier3']
+        if tier not in valid_tiers:
+            return f"Invalid tier: {tier}", 404
+        
+        # Construct template path
+        template_path = f'learning/{tier}/{module}.html'
+        
+        # Try to render the template
+        return render_template(template_path)
+        
+    except Exception as e:
+        return f"Module not found: {tier}/{module}", 404
+
+@app.route('/learning/tier-selector')
+def tier_selector():
+    """Tier selection interface for users"""
+    return render_template('learning/tier_selector.html')
+
+@app.route('/api/tiers')
+def get_tiers():
+    """API endpoint to get available tiers and modules"""
+    tiers = {
+        'tier1': {
+            'name': 'Magic Workshop',
+            'age_range': '5-7 years',
+            'description': 'Visual block-based programming with magical themes',
+            'modules': [
+                {
+                    'id': 'module1',
+                    'name': 'Basic Movement Magic',
+                    'description': 'Learn to move the wizard with simple spells',
+                    'difficulty': 'beginner',
+                    'estimated_time': '30 minutes'
+                }
+            ]
+        },
+        'tier2': {
+            'name': 'Innovation Lab',
+            'age_range': '8-10 years',
+            'description': 'Hybrid visual-text programming with engineering themes',
+            'modules': [
+                {
+                    'id': 'module1',
+                    'name': 'Code Builder',
+                    'description': 'Build programs with visual blocks that generate real code',
+                    'difficulty': 'intermediate',
+                    'estimated_time': '45 minutes'
+                }
+            ]
+        },
+        'tier3': {
+            'name': 'Development Studio',
+            'age_range': '11-13 years',
+            'description': 'Professional text-based programming environment',
+            'modules': [
+                {
+                    'id': 'module1',
+                    'name': 'Python Fundamentals',
+                    'description': 'Learn Python programming in a professional IDE',
+                    'difficulty': 'advanced',
+                    'estimated_time': '60 minutes'
+                }
+            ]
+        }
+    }
+    return jsonify(tiers)
+
+@app.route('/api/user/progress')
+def get_user_progress():
+    """API endpoint to get user progress across all tiers"""
+    # This would typically fetch from a database
+    # For now, return mock data
+    progress = {
+        'tier1': {
+            'modules_completed': 1,
+            'total_modules': 5,
+            'stars_earned': 8,
+            'total_stars': 15,
+            'current_module': 'module2'
+        },
+        'tier2': {
+            'modules_completed': 0,
+            'total_modules': 4,
+            'stars_earned': 0,
+            'total_stars': 12,
+            'current_module': 'module1'
+        },
+        'tier3': {
+            'modules_completed': 0,
+            'total_modules': 6,
+            'stars_earned': 0,
+            'total_stars': 18,
+            'current_module': 'module1'
+        }
+    }
+    return jsonify(progress)
+
 # Socket.IO events for Professor Sparkle
 @socketio.on('init_sparkle')
 def handle_init_sparkle():

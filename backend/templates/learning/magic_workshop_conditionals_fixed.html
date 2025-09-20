@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Workshop - Conditionals Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        .spell-block {
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 4px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .spell-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .spell-block:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        
+        .movement-spell {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .action-spell {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+        
+        .logic-spell {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .conditional-container {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            border: 2px solid #FFD700;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .conditional-header {
+            background: rgba(255, 215, 0, 0.9);
+            color: #7B1FA2;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .condition-selector {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+        }
+
+        .then-spells-area, .else-spells-area {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 60px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .conditional-placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+        }
+                .grid-cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .grid-cell.preview-path {
+            background-color: rgba(255, 255, 0, 0.3);
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+
+        .grid-cell.preview-destination {
+            background-color: rgba(34, 197, 94, 0.4);
+            border-color: #22c55e;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+
+        .grid-cell.preview-blocked {
+            background-color: rgba(239, 68, 68, 0.4);
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        } background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .grid-cell:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .wizard {
+            font-size: 32px;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+        
+        .sequence-spell {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .connector {
+            color: #FFD700;
+            font-size: 20px;
+            margin: 0 4px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .boundary-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+            border: 3px solid white;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+            width: 280px;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-220px);
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-black bg-opacity-20 text-white p-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">✨</span>
+                <h1 class="text-xl font-bold">Magic Workshop - Phase 2</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>Welcome, Emma!</span>
+                <button class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-bold">🏆 Spell Caster</button>
+                <button class="bg-blue-600 text-white px-3 py-1 rounded-lg">Dashboard</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- Collapsible Sidebar -->
+        <div id="sidebar" class="sidebar bg-black bg-opacity-30 text-white p-4 relative">
+            <button id="toggleSidebar" class="toggle-btn">◀</button>
+            
+            <!-- Lesson Info -->
+            <div class="bg-blue-900 bg-opacity-50 p-4 rounded-lg mb-4 border-2 border-yellow-400">
+                <div class="flex items-center mb-2">
+                    <span class="text-yellow-400 text-xl mr-2">⭐</span>
+                   <h2 class="text-2xl font-bold text-white mb-4">⭐ Lesson 3: If This, Then That!</h2>
+                <p class="text-white/90 mb-4">Learn to make decisions with conditional magic! Use "If... Then..." blocks to create smart spells that react to different situations.</p>
+            </div>
+
+            <!-- Movement Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">🚶</span>
+                    <h3 class="font-bold">Movement Spells</h3>
+                </div>
+                
+                <!-- Single Step Movements -->
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-up-1">
+                    <span class="mr-2">⬆️</span> Move Up 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-down-1">
+                    <span class="mr-2">⬇️</span> Move Down 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-left-1">
+                    <span class="mr-2">⬅️</span> Move Left 1
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell="move-right-1">
+                    <span class="mr-2">➡️</span> Move Right 1
+                </div>
+                
+                <!-- Multi-Step Movements -->
+                <div class="mt-3 text-sm text-yellow-300 font-bold">✨ New Multi-Step Spells:</div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-up" 
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬆️</span> Move Up 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-down"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬇️</span> Move Down 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-left"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">⬅️</span> Move Left 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•</span>
+                </div>
+                <div class="spell-block movement-spell" draggable="true" data-spell-type="move-right"
+                     onmouseover="showMovementPreview(this)" onmouseout="hideMovementPreview()">
+                    <span class="mr-2">➡️</span> Move Right 
+                    <select class="step-selector bg-gray-700 text-white rounded ml-2 px-1" onchange="updateStepCounter(this)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <span class="step-counter ml-2 text-yellow-300">•••••</span>
+                </div>
+            </div>
+
+            <!-- Action Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">✨</span>
+                    <h3 class="font-bold">Action Spells</h3>
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="cast-sparkles">
+                    <span class="mr-2">✨</span> Cast Sparkles
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="say-hello">
+                    <span class="mr-2">💬</span> Say Hello
+                </div>
+                <div class="spell-block action-spell" draggable="true" data-spell="dance">
+                    <span class="mr-2">💃</span> Dance
+                </div>
+            </div>
+
+            <!-- Logic Spells -->
+            <div class="mb-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-yellow-400 mr-2">🧠</span>
+                    <h3 class="font-bold">Logic Spells</h3>
+                </div>
+                
+                <!-- Conditional Block -->
+                <div class="spell-block logic-spell mb-2 flex items-center justify-between" draggable="true" id="conditional-spell-block">
+                    <div class="flex items-center">
+                        <span class="mr-2">🤔</span> If
+                        <select class="condition-selector mx-2" onchange="updateConditionDisplay(this)">
+                            <option value="at_edge">At Edge</option>
+                            <option value="at_corner">At Corner</option>
+                            <option value="at_center">At Center</option>
+                            <option value="can_move_up">Can Move Up</option>
+                            <option value="can_move_down">Can Move Down</option>
+                            <option value="can_move_left">Can Move Left</option>
+                            <option value="can_move_right">Can Move Right</option>
+                        </select>
+                        Then...
+                    </div>
+                    <span class="condition-indicator text-xs">📍</span>
+                </div>
+                
+                <div class="spell-block logic-spell" draggable="true" data-spell="repeat-3x">
+                    <span class="mr-2">🔄</span> Repeat 3x
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+                    <h3 class="font-bold">Logic Spells</h3>
+                </div>
+                <div class="spell-block logic-spell" draggable="true" data-spell="repeat-3">
+                    <span class="mr-2">🔄</span> Repeat 3x
+                </div>
+                <div class="spell-block logic-spell" draggable="true" data-spell="if-then">
+                    <span class="mr-2">🤔</span> If... Then...
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <!-- Magical Playground -->
+            <div class="bg-black bg-opacity-20 rounded-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-2">🏰</span>
+                        <h2 class="text-white text-xl font-bold">Magical Playground</h2>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="castSpells" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">▶️ Cast Spells</button>
+                        <button id="watchDemo" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">👁️ Watch Demo</button>
+                        <button id="stopSpells" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">⏹️ Stop</button>
+                        <button id="clearSpells" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">🗑️ Clear</button>
+                        <button id="resetWizard" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">🔄 Reset Wizard</button>
+                    </div>
+                </div>
+
+                <!-- Spell Sequence Area -->
+                <div class="bg-black bg-opacity-30 rounded-lg p-4 mb-4">
+                    <div class="flex items-center mb-2">
+                        <span class="text-yellow-400 text-xl mr-2">⭐</span>
+                        <h3 class="text-white font-bold">Your Spell Sequence</h3>
+                    </div>
+                    <div id="spellSequenceArea" class="min-h-20 border-2 border-dashed border-yellow-400 rounded-lg p-4">
+                        <div id="sequenceInstructions" class="text-center text-gray-300">
+                            <span class="text-2xl">🎯</span><br>
+                            Drag spell blocks here to create your magic sequence!<br>
+                            <span class="text-sm">Try the new multi-step spells: "Move Up 2" or "Move Right 3"!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10x10 Grid -->
+                <div class="bg-black bg-opacity-30 rounded-lg p-4">
+                    <div class="grid grid-cols-10 gap-0" id="magicGrid">
+                        <!-- Grid will be generated by JavaScript -->
+                    </div>
+                    <!-- Column numbers -->
+                    <div class="grid grid-cols-10 gap-0 mt-2">
+                        <div class="text-center text-yellow-400 font-bold text-sm">1</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">2</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">3</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">4</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">5</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">6</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">7</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">8</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">9</div>
+                        <div class="text-center text-yellow-400 font-bold text-sm">10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professor Sparkle -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-400 text-black p-4">
+        <div class="flex items-center justify-between max-w-6xl mx-auto">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-3xl">
+                    👨🏿‍🏫
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg">Professor Sparkle</h3>
+                    <p class="text-sm">Your AI Magic Tutor</p>
+                    <p class="text-xs">🤖 AI Connected</p>
+                </div>
+                <div id="sparkleMessage" class="bg-white bg-opacity-20 rounded-lg p-3 max-w-md">
+                    <p class="text-sm">Welcome to Phase 2! Now you can move multiple steps with single spells. Try "Move Right 3" to move 3 cells at once! The wizard is at E1 and ready for multi-step adventures! 🌟</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="text-right mr-4">
+                    <p class="text-xs">Progress</p>
+                    <p class="font-bold" id="progressPercent">0%</p>
+                </div>
+                <button id="showDemo" class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm">👁️ Show Me How</button>
+                <button id="askQuestion" class="bg-red-600 text-white px-3 py-2 rounded-lg text-sm">🎤 Ask Question</button>
+                <button id="toggleAudio" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">🔊 Audio: ON</button>
+                <button id="giveHint" class="bg-yellow-600 text-black px-3 py-2 rounded-lg text-sm">💡 Give Hint</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let wizardPosition = { row: 0, col: 4 }; // E1 starting position
+        let spellSequence = [];
+        let isExecuting = false;
+        let audioEnabled = true;
+        let socket = null;
+
+        // Initialize Socket.IO connection
+        function initializeSocket() {
+            try {
+                socket = io();
+                socket.on('connect', () => {
+                    console.log('Connected to AI server');
+                });
+                
+                socket.on('sparkle_response', (data) => {
+                    updateProfessorMessage(data.message);
+                    if (audioEnabled) {
+                        speakText(data.message);
+                    }
+                });
+                
+                socket.on('sparkle_error', (data) => {
+                    console.error('Sparkle error:', data.error);
+                    updateProfessorMessage("Sorry, I had a technical hiccup! Let me try to help you another way.");
+                });
+            } catch (error) {
+                console.log('Socket.IO not available, using fallback responses');
+            }
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            createGrid();
+            updateWizardPosition();
+            setupEventListeners();
+            setupDragAndDrop();
+            initializeSocket();
+        }
+
+        // Create 10x10 grid
+        function createGrid() {
+            const grid = document.getElementById('magicGrid');
+            grid.innerHTML = '';
+            
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Update wizard position on grid
+        function updateWizardPosition() {
+            // Clear all wizards
+            document.querySelectorAll('.wizard').forEach(w => w.remove());
+            
+            // Add wizard to current position
+            const targetCell = document.querySelector(`[data-row="${wizardPosition.row}"][data-col="${wizardPosition.col}"]`);
+            if (targetCell) {
+                const wizard = document.createElement('div');
+                wizard.className = 'wizard';
+                wizard.textContent = '🧙‍♂️';
+                targetCell.appendChild(wizard);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Sidebar toggle
+            document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
+            
+            // Control buttons
+            document.getElementById('castSpells').addEventListener('click', executeSpells);
+            document.getElementById('watchDemo').addEventListener('click', watchDemo);
+            document.getElementById('stopSpells').addEventListener('click', stopExecution);
+            document.getElementById('clearSpells').addEventListener('click', clearSequence);
+            document.getElementById('resetWizard').addEventListener('click', resetWizard);
+            
+            // Professor Sparkle buttons
+            document.getElementById('showDemo').addEventListener('click', showDemo);
+            document.getElementById('askQuestion').addEventListener('click', askQuestion);
+            document.getElementById('toggleAudio').addEventListener('click', toggleAudio);
+            document.getElementById('giveHint').addEventListener('click', giveHint);
+        }
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
+            const spellBlocks = document.querySelectorAll('.spell-block');
+            const sequenceArea = document.getElementById('spellSequenceArea');
+
+            spellBlocks.forEach(block => {
+                block.addEventListener("dragstart", (e) => {
+                    const spellType = e.target.dataset.spellType;
+                    const steps = e.target.querySelector(".step-selector").value;
+                    const spellId = `${spellType}-${steps}`;
+                    const spellText = `Move ${spellType.split("-")[1]} ${steps}`;
+                    const spellIcon = e.target.querySelector("span").textContent;
+
+                    e.dataTransfer.setData("text/plain", JSON.stringify({
+                        spell: spellId,
+                        text: spellText,
+                        icon: spellIcon
+                    }));
+                });
+            });
+
+            sequenceArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                sequenceArea.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            });
+
+            sequenceArea.addEventListener('dragleave', (e) => {
+                sequenceArea.style.backgroundColor = '';
+            });
+
+            sequenceArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                sequenceArea.style.backgroundColor = '';
+                
+                try {
+                    const spellData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    addSpellToSequence(spellData.spell, spellData.text, spellData.icon);
+                } catch (error) {
+                    console.error('Error adding spell:', error);
+                }
+            });
+        }
+
+        // Add spell to sequence
+        function addSpellToSequence(spellId, spellText, spellIcon) {
+            const sequenceArea = document.getElementById('spellSequenceArea');
+            const instructions = document.getElementById('sequenceInstructions');
+
+            // Hide instructions if this is the first spell
+            if (spellSequence.length === 0) {
+                instructions.style.display = 'none';
+            }
+
+            // Create spell element
+            const spellElement = document.createElement('div');
+            spellElement.className = 'sequence-spell';
+            spellElement.dataset.spell = spellId;
+            spellElement.innerHTML = `<span style="font-size: 16px;">${spellIcon}</span> ${spellText}`;
+            
+            // Add connector if not first spell
+            if (spellSequence.length > 0) {
+                const connector = document.createElement('span');
+                connector.className = 'connector';
+                connector.textContent = '↓';
+                sequenceArea.appendChild(connector);
+            }
+            
+            sequenceArea.appendChild(spellElement);
+            spellSequence.push({ id: spellId, text: spellText, icon: spellIcon });
+            
+            updateProgress();
+            
+            // Send to AI for contextual response
+            sendToAI(`I added a ${spellText} spell to my sequence. I now have ${spellSequence.length} spells total.`, {
+                action: 'spell_added',
+                spell: spellId,
+                sequence_length: spellSequence.length
+            });
+        }
+
+        // Execute spells
+        async function executeSpells() {
+            if (isExecuting || spellSequence.length === 0) return;
+            
+            isExecuting = true;
+            
+            for (let i = 0; i < spellSequence.length; i++) {
+                const spell = spellSequence[i];
+                await executeSpell(spell.id);
+                await sleep(800); // Pause between spells
+            }
+            
+            isExecuting = false;
+            
+            // Send completion message to AI
+            sendToAI(`I successfully executed ${spellSequence.length} spells! The wizard is now at position (${wizardPosition.row}, ${wizardPosition.col}).`, {
+                action: 'spells_executed',
+                final_position: wizardPosition,
+                spell_count: spellSequence.length
+            });
+        }
+
+        // Execute individual spell
+        async function executeSpell(spellId) {
+            const [action, direction, steps] = spellId.split('-');
+            
+            if (action === 'move') {
+                const stepCount = parseInt(steps) || 1;
+                
+                for (let i = 0; i < stepCount; i++) {
+                    const newPosition = calculateNewPosition(direction);
+                    
+                    if (isValidPosition(newPosition)) {
+                        wizardPosition = newPosition;
+                        updateWizardPosition();
+                        await sleep(300); // Animation delay for each step
+                    } else {
+                        showBoundaryWarning(direction, stepCount, i + 1);
+                        break; // Stop if boundary hit
+                    }
+                }
+            } else if (action === 'cast' && direction === 'sparkles') {
+                // Cast sparkles animation
+                showSparkles();
+            } else if (action === 'say' && direction === 'hello') {
+                // Say hello
+                if (audioEnabled) {
+                    speakText("Hello! I'm learning magic!");
+                }
+            } else if (action === 'dance') {
+                // Dance animation
+                animateDance();
+            }
+        }
+
+        // Calculate new position based on direction
+        function calculateNewPosition(direction) {
+            const newPos = { ...wizardPosition };
+            
+            switch (direction) {
+                case 'up': newPos.row--; break;
+                case 'down': newPos.row++; break;
+                case 'left': newPos.col--; break;
+                case 'right': newPos.col++; break;
+            }
+            
+            return newPos;
+        }
+
+        // Check if position is valid (within grid bounds)
+        function isValidPosition(position) {
+            return position.row >= 0 && position.row < 10 && 
+                   position.col >= 0 && position.col < 10;
+        }
+
+        // Show boundary warning
+        function showBoundaryWarning(direction, totalSteps, completedSteps) {
+            const warning = document.createElement('div');
+            warning.className = 'boundary-warning';
+            warning.innerHTML = `
+                <div style="font-size: 24px; margin-bottom: 10px;">🚫</div>
+                <div style="font-size: 18px; margin-bottom: 5px;">Can't move ${direction}!</div>
+                <div style="font-size: 14px;">The wizard completed ${completedSteps} of ${totalSteps} steps before hitting the boundary.</div>
+            `;
+            
+            document.body.appendChild(warning);
+            
+            // Remove warning after 3 seconds
+            setTimeout(() => {
+                warning.remove();
+            }, 3000);
+            
+            // Send to AI
+            sendToAI(`The wizard hit a boundary while trying to move ${direction}. Completed ${completedSteps} of ${totalSteps} steps.`, {
+                action: 'boundary_hit',
+                direction: direction,
+                completed_steps: completedSteps,
+                total_steps: totalSteps
+            });
+        }
+
+        // Reset wizard to starting position
+        function resetWizard() {
+            wizardPosition = { row: 0, col: 4 }; // E1
+            updateWizardPosition();
+            
+            sendToAI("I reset the wizard back to the starting position E1!", {
+                action: 'wizard_reset',
+                position: wizardPosition
+            });
+        }
+
+        // Clear spell sequence
+        function clearSequence() {
+            spellSequence = [];
+            const sequenceArea = document.getElementById('spellSequenceArea');
+            const instructions = document.getElementById('sequenceInstructions');
+            
+            sequenceArea.innerHTML = '';
+            sequenceArea.appendChild(instructions);
+            instructions.style.display = 'block';
+            
+            updateProgress();
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // Professor Sparkle functions
+        function showDemo() {
+            sendToAI("Please show me how to use the multi-step movement spells!", {
+                action: 'show_demo',
+                lesson: 'multi_step_movement'
+            });
+        }
+
+        function askQuestion() {
+            sendToAI("I have a question about the multi-step movement spells. How do they work?", {
+                action: 'ask_question',
+                topic: 'multi_step_spells'
+            });
+        }
+
+        function giveHint() {
+            sendToAI("Can you give me a hint about using multi-step spells effectively?", {
+                action: 'give_hint',
+                context: 'multi_step_movement'
+            });
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('toggleAudio');
+            btn.textContent = audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+        }
+
+        // Grid preview functionality
+        function showMovementPreview(blockElement) {
+            const spellType = blockElement.dataset.spellType;
+            const stepSelector = blockElement.querySelector('.step-selector');
+            const steps = parseInt(stepSelector.value);
+            const direction = spellType.split('-')[1]; // Extract direction from 'move-up', 'move-down', etc.
+            
+            // Calculate preview path
+            const previewPath = calculateMovementPath(direction, steps);
+            
+            // Highlight the path on the grid
+            highlightGridPath(previewPath);
+        }
+
+        function hideMovementPreview() {
+            // Remove all preview highlights
+            const gridCells = document.querySelectorAll('.grid-cell');
+            gridCells.forEach(cell => {
+                cell.classList.remove('preview-path', 'preview-destination', 'preview-blocked');
+            });
+        }
+
+        function calculateMovementPath(direction, steps) {
+            const currentPos = { ...wizardPosition };
+            const path = [];
+            let blocked = false;
+            
+            for (let i = 1; i <= steps; i++) {
+                const newPos = { ...currentPos };
+                
+                switch (direction) {
+                    case 'up': newPos.row--; break;
+                    case 'down': newPos.row++; break;
+                    case 'left': newPos.col--; break;
+                    case 'right': newPos.col++; break;
+                }
+                
+                // Check if position is valid
+                if (newPos.row >= 0 && newPos.row < 10 && newPos.col >= 0 && newPos.col < 10) {
+                    path.push({
+                        row: newPos.row,
+                        col: newPos.col,
+                        step: i,
+                        isDestination: i === steps,
+                        isBlocked: false
+                    });
+                    currentPos.row = newPos.row;
+                    currentPos.col = newPos.col;
+                } else {
+                    // Hit boundary
+                    blocked = true;
+                    path.push({
+                        row: newPos.row,
+                        col: newPos.col,
+                        step: i,
+                        isDestination: false,
+                        isBlocked: true
+                    });
+                    break;
+                }
+            }
+            
+            return path;
+        }
+
+        function highlightGridPath(path) {
+            path.forEach(pathStep => {
+                if (pathStep.row >= 0 && pathStep.row < 10 && pathStep.col >= 0 && pathStep.col < 10) {
+                    const cellIndex = pathStep.row * 10 + pathStep.col;
+                    const cell = document.querySelector(`[data-cell="${cellIndex}"]`);
+                    
+                    if (cell) {
+                        if (pathStep.isDestination && !pathStep.isBlocked) {
+                            cell.classList.add('preview-destination');
+                        } else {
+                            cell.classList.add('preview-path');
+                        }
+                    }
+                } else if (pathStep.isBlocked) {
+                    // Show blocked indicator (outside grid)
+                    // We can add a visual indicator for blocked moves
+                }
+            });
+        }
+
+        // Update step counter visual indicator
+        function updateStepCounter(selectElement) {
+            const stepCount = parseInt(selectElement.value);
+            const stepCounter = selectElement.parentElement.querySelector('.step-counter');
+            
+            // Create visual dots based on step count
+            let dots = '';
+            for (let i = 0; i < stepCount; i++) {
+                dots += '•';
+            }
+            
+            stepCounter.textContent = dots;
+        }
+
+        // Send message to AI
+        function sendToAI(message, context = {}) {
+            if (socket && socket.connected) {
+                socket.emit('sparkle_message', {
+                    message: message,
+                    context: {
+                        ...context,
+                        wizard_position: wizardPosition,
+                        spell_sequence: spellSequence,
+                        lesson: 'multi_step_movement'
+                    }
+                });
+                return true;
+            } else {
+                // Fallback responses for Phase 2
+                const responses = {
+                    'spell_added': [
+                        `Great choice! Multi-step spells are powerful magic! 🌟`,
+                        `Excellent! You're learning to move efficiently with fewer spells!`,
+                        `Perfect! Multi-step spells help you reach distant places quickly!`
+                    ],
+                    'show_demo': [
+                        `Watch this! I'll show you how "Move Right 3" moves the wizard 3 cells in one spell! ✨`,
+                        `Let me demonstrate multi-step magic! One spell, multiple moves!`
+                    ],
+                    'ask_question': [
+                        `Multi-step spells are like taking bigger steps! "Move Up 2" moves 2 cells instead of 1!`,
+                        `Think of it as magical efficiency - why use 3 spells when 1 can do the job?`
+                    ],
+                    'give_hint': [
+                        `💡 Hint: Use "Move Right 3" to quickly cross the grid, or "Move Up 2" to jump over obstacles!`,
+                        `💡 Try combining single-step and multi-step spells for complex paths!`
+                    ]
+                };
+                
+                const responseArray = responses[context.action] || [
+                    "Multi-step spells are amazing! Try moving 2 or 3 steps at once! 🌟"
+                ];
+                
+                const response = responseArray[Math.floor(Math.random() * responseArray.length)];
+                updateProfessorMessage(response);
+                
+                if (audioEnabled) {
+                    speakText(response);
+                }
+                return false;
+            }
+        }
+
+        // Update Professor Sparkle message
+        function updateProfessorMessage(message) {
+            const messageElement = document.getElementById('sparkleMessage');
+            messageElement.innerHTML = `<p class="text-sm">${message}</p>`;
+        }
+
+        // Text-to-speech
+        function speakText(text) {
+            if ('speechSynthesis' in window && audioEnabled) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Update progress
+        function updateProgress() {
+            const progress = Math.min(100, (spellSequence.length / 5) * 100);
+            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+        }
+
+        // Utility functions
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showSparkles() {
+            // Add sparkle animation
+            const wizard = document.querySelector('.wizard');
+            if (wizard) {
+                wizard.style.animation = 'pulse 0.5s ease-in-out 3';
+                setTimeout(() => {
+                    wizard.style.animation = '';
+                }, 1500);
+            }
+        }
+
+        function animateDance() {
+            const wizard = document.querySelector('.wizard');
+            if (wizard) {
+                wizard.style.animation = 'bounce 0.3s ease-in-out 6';
+                setTimeout(() => {
+                    wizard.style.animation = '';
+                }, 1800);
+            }
+        }
+
+        function stopExecution() {
+            isExecuting = false;
+        }
+
+        function watchDemo() {
+            // Auto-add demo sequence
+            clearSequence();
+            addSpellToSequence('move-right-2', 'Move Right 2', '➡️➡️');
+            addSpellToSequence('move-up-3', 'Move Up 3', '⬆️⬆️⬆️');
+            addSpellToSequence('move-left-1', 'Move Left 1', '⬅️');
+            
+            setTimeout(() => {
+                executeSpells();
+            }, 1000);
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
+

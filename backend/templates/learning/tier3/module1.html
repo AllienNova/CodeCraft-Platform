@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codopia - Development Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+    <style>
+        .tier3-gradient {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #7209b7 100%);
+        }
+        
+        .code-editor {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+            color: #d4d4d4;
+        }
+        
+        .line-numbers {
+            background: #252526;
+            color: #858585;
+            border-right: 1px solid #333;
+            user-select: none;
+        }
+        
+        .console-output {
+            background: #0c0c0c;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+        }
+        
+        .project-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .project-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .project-card.active {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .achievement-badge-tier3 {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+        
+        .achievement-badge-tier3.unlocked {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            opacity: 1;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .syntax-keyword { color: #569cd6; }
+        .syntax-string { color: #ce9178; }
+        .syntax-number { color: #b5cea8; }
+        .syntax-comment { color: #6a9955; }
+        .syntax-function { color: #dcdcaa; }
+        .syntax-class { color: #4ec9b0; }
+        
+        .file-tree {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+        }
+        
+        .file-item {
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .file-item.active {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        .debug-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+        }
+        
+        .variable-item {
+            padding: 2px 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .error-highlight {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 3px solid #ff0000;
+        }
+        
+        .success-highlight {
+            background: rgba(0, 255, 0, 0.2);
+            border-left: 3px solid #00ff00;
+        }
+    </style>
+</head>
+<body class="min-h-screen tier3-gradient">
+    <!-- Header -->
+    <header class="bg-black bg-opacity-30 backdrop-blur-sm border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-3">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="text-white hover:text-purple-200 mr-4">
+                        <span class="text-2xl">◀</span>
+                    </button>
+                    <h1 class="text-xl font-bold text-white">💻 Development Studio - Module 1: Python Fundamentals</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white text-sm">Welcome, Developer!</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span class="text-green-400 text-sm">Connected</span>
+                    </div>
+                    <button class="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700">
+                        🏆 Python Dev
+                    </button>
+                    <button class="bg-gray-700 text-white px-3 py-1 rounded text-sm hover:bg-gray-600">
+                        Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main IDE Interface -->
+    <div class="flex h-screen">
+        
+        <!-- Left Sidebar - File Explorer & Project Structure -->
+        <div class="w-64 bg-black bg-opacity-40 backdrop-blur-sm border-r border-gray-700 flex flex-col">
+            
+            <!-- Project Explorer -->
+            <div class="p-3 border-b border-gray-700">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">📁</span>
+                    Project Explorer
+                </h3>
+                <div class="file-tree rounded text-sm">
+                    <div class="file-item text-white flex items-center active" data-file="main.py">
+                        <span class="mr-2">🐍</span>
+                        main.py
+                    </div>
+                    <div class="file-item text-gray-400 flex items-center" data-file="robot.py">
+                        <span class="mr-2">🤖</span>
+                        robot.py
+                    </div>
+                    <div class="file-item text-gray-400 flex items-center" data-file="utils.py">
+                        <span class="mr-2">🔧</span>
+                        utils.py
+                    </div>
+                    <div class="file-item text-gray-400 flex items-center" data-file="README.md">
+                        <span class="mr-2">📝</span>
+                        README.md
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Snippets Library -->
+            <div class="p-3 border-b border-gray-700">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">📚</span>
+                    Code Library
+                </h3>
+                <div class="space-y-2">
+                    <div class="snippet-item p-2 bg-gray-800 rounded text-xs cursor-pointer hover:bg-gray-700" data-snippet="function">
+                        <div class="text-blue-300">def function_name():</div>
+                        <div class="text-gray-400 ml-4"># Your code here</div>
+                    </div>
+                    <div class="snippet-item p-2 bg-gray-800 rounded text-xs cursor-pointer hover:bg-gray-700" data-snippet="for_loop">
+                        <div class="text-blue-300">for i in range(10):</div>
+                        <div class="text-gray-400 ml-4"># Loop body</div>
+                    </div>
+                    <div class="snippet-item p-2 bg-gray-800 rounded text-xs cursor-pointer hover:bg-gray-700" data-snippet="if_statement">
+                        <div class="text-blue-300">if condition:</div>
+                        <div class="text-gray-400 ml-4"># If true</div>
+                        <div class="text-blue-300">else:</div>
+                        <div class="text-gray-400 ml-4"># If false</div>
+                    </div>
+                    <div class="snippet-item p-2 bg-gray-800 rounded text-xs cursor-pointer hover:bg-gray-700" data-snippet="class">
+                        <div class="text-blue-300">class ClassName:</div>
+                        <div class="text-gray-400 ml-4">def __init__(self):</div>
+                        <div class="text-gray-400 ml-8">pass</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Debug Panel -->
+            <div class="p-3 flex-1">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">🐛</span>
+                    Debug Panel
+                </h3>
+                <div class="debug-panel rounded text-xs h-32 overflow-y-auto">
+                    <div class="variable-item text-green-400">
+                        <span class="text-gray-400">Variables:</span>
+                    </div>
+                    <div class="variable-item text-white">
+                        robot_x: <span class="text-yellow-400">5</span>
+                    </div>
+                    <div class="variable-item text-white">
+                        robot_y: <span class="text-yellow-400">5</span>
+                    </div>
+                    <div class="variable-item text-white">
+                        steps: <span class="text-yellow-400">0</span>
+                    </div>
+                    <div class="variable-item text-gray-400 mt-2">
+                        <span class="text-gray-400">Call Stack:</span>
+                    </div>
+                    <div class="variable-item text-blue-300">
+                        main() - line 1
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Area - Code Editor -->
+        <div class="flex-1 flex flex-col">
+            
+            <!-- Editor Tabs -->
+            <div class="bg-gray-800 border-b border-gray-700 flex">
+                <div class="tab active bg-gray-700 px-4 py-2 text-white text-sm border-r border-gray-600 flex items-center">
+                    <span class="mr-2">🐍</span>
+                    main.py
+                    <button class="ml-2 text-gray-400 hover:text-white">×</button>
+                </div>
+                <div class="tab px-4 py-2 text-gray-400 text-sm border-r border-gray-600 hover:text-white cursor-pointer">
+                    <span class="mr-2">🤖</span>
+                    robot.py
+                </div>
+            </div>
+
+            <!-- Code Editor -->
+            <div class="flex-1 flex">
+                <!-- Line Numbers -->
+                <div class="line-numbers w-12 p-2 text-right text-sm">
+                    <div>1</div>
+                    <div>2</div>
+                    <div>3</div>
+                    <div>4</div>
+                    <div>5</div>
+                    <div>6</div>
+                    <div>7</div>
+                    <div>8</div>
+                    <div>9</div>
+                    <div>10</div>
+                    <div>11</div>
+                    <div>12</div>
+                    <div>13</div>
+                    <div>14</div>
+                    <div>15</div>
+                </div>
+                
+                <!-- Editor Content -->
+                <div class="code-editor flex-1 p-2 text-sm" id="codeEditor" contenteditable="true">
+<span class="syntax-comment"># Welcome to Python Development Studio!</span>
+<span class="syntax-comment"># Module 1: Python Fundamentals</span>
+
+<span class="syntax-keyword">from</span> robot <span class="syntax-keyword">import</span> Robot
+
+<span class="syntax-comment"># Create a robot instance</span>
+robot = <span class="syntax-class">Robot</span>()
+
+<span class="syntax-comment"># Your first Python program</span>
+<span class="syntax-keyword">def</span> <span class="syntax-function">main</span>():
+    <span class="syntax-string">"Main function - entry point of the program"</span>
+    <span class="syntax-function">print</span>(<span class="syntax-string">"Hello, Python Developer!"</span>)
+    
+    <span class="syntax-comment"># Move the robot</span>
+    robot.<span class="syntax-function">move_right</span>(<span class="syntax-number">3</span>)
+    robot.<span class="syntax-function">move_down</span>(<span class="syntax-number">2</span>)
+    
+    <span class="syntax-comment"># Add your code here!</span>
+
+<span class="syntax-keyword">if</span> <span class="syntax-string">__name__</span> == <span class="syntax-string">"__main__"</span>:
+    <span class="syntax-function">main</span>()
+                </div>
+            </div>
+
+            <!-- Editor Toolbar -->
+            <div class="bg-gray-800 border-t border-gray-700 p-2 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <button id="runCode" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 flex items-center">
+                        <span class="mr-1">▶️</span>
+                        Run (F5)
+                    </button>
+                    <button id="debugCode" class="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 flex items-center">
+                        <span class="mr-1">🐛</span>
+                        Debug
+                    </button>
+                    <button id="stopCode" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 flex items-center">
+                        <span class="mr-1">⏹️</span>
+                        Stop
+                    </button>
+                    <button id="saveCode" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 flex items-center">
+                        <span class="mr-1">💾</span>
+                        Save (Ctrl+S)
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                    <span>Python 3.11</span>
+                    <span>UTF-8</span>
+                    <span>Ln 9, Col 5</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Output & Visualization -->
+        <div class="w-80 bg-black bg-opacity-40 backdrop-blur-sm border-l border-gray-700 flex flex-col">
+            
+            <!-- Robot Visualization -->
+            <div class="p-3 border-b border-gray-700">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">🎮</span>
+                    Robot Visualization
+                </h3>
+                <div class="bg-gray-900 rounded p-2">
+                    <div class="grid grid-cols-10 gap-0 w-fit mx-auto" id="robotGrid">
+                        <!-- Grid cells will be generated by JavaScript -->
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">
+                    Position: <span id="robotPosition" class="text-green-400">(5, 5)</span>
+                    | Steps: <span id="robotSteps" class="text-blue-400">0</span>
+                </div>
+            </div>
+
+            <!-- Console Output -->
+            <div class="p-3 border-b border-gray-700 flex-1">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">💻</span>
+                    Console Output
+                </h3>
+                <div class="console-output rounded p-2 h-40 overflow-y-auto text-xs" id="consoleOutput">
+                    <div class="text-green-400">Python 3.11.0 Development Console</div>
+                    <div class="text-blue-400">Ready for execution...</div>
+                    <div class="text-gray-400">Type your code and press Run to see output here.</div>
+                </div>
+            </div>
+
+            <!-- Development Projects -->
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-2 flex items-center">
+                    <span class="mr-2">🚀</span>
+                    Development Projects
+                </h3>
+                <div class="space-y-2">
+                    <!-- Beginner Project -->
+                    <div class="project-card rounded p-3 active" data-project="hello_world">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-white font-bold text-sm">🌟 Hello World</h4>
+                            <div class="flex">
+                                <span class="text-yellow-400 text-xs">⭐</span>
+                                <span class="text-gray-400 text-xs">⭐⭐</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-xs mb-2">Create your first Python program with functions and variables!</p>
+                        <div class="text-xs text-gray-400">
+                            <div>⭐ Print "Hello World" (1 star)</div>
+                            <div>⭐⭐ Use variables and functions (2 stars)</div>
+                            <div>⭐⭐⭐ Add user input (3 stars)</div>
+                        </div>
+                    </div>
+
+                    <!-- Intermediate Project -->
+                    <div class="project-card rounded p-3" data-project="robot_maze">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-white font-bold text-sm">🔥 Robot Maze</h4>
+                            <div class="flex">
+                                <span class="text-gray-400 text-xs">⭐⭐⭐</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-xs mb-2">Program a robot to navigate through a complex maze!</p>
+                        <div class="text-xs text-gray-400">
+                            <div>⭐ Basic movement (1 star)</div>
+                            <div>⭐⭐ Use loops for efficiency (2 stars)</div>
+                            <div>⭐⭐⭐ Implement pathfinding (3 stars)</div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Project -->
+                    <div class="project-card rounded p-3" data-project="data_analysis">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-white font-bold text-sm">💎 Data Analysis</h4>
+                            <div class="flex">
+                                <span class="text-gray-400 text-xs">⭐⭐⭐</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-xs mb-2">Analyze data using Python libraries and create visualizations!</p>
+                        <div class="text-xs text-gray-400">
+                            <div>⭐ Read CSV data (1 star)</div>
+                            <div>⭐⭐ Calculate statistics (2 stars)</div>
+                            <div>⭐⭐⭐ Create charts (3 stars)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievement Badges -->
+                <div class="mt-4 p-3 bg-black bg-opacity-30 rounded">
+                    <h4 class="text-white font-bold text-sm mb-2 flex items-center">
+                        <span class="mr-2">🏆</span>
+                        Developer Badges
+                    </h4>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="achievement-badge-tier3 rounded p-2 text-center unlocked" data-achievement="first-code">
+                            <div class="text-lg mb-1">💻</div>
+                            <div class="text-xs text-white">First Code</div>
+                        </div>
+                        <div class="achievement-badge-tier3 rounded p-2 text-center" data-achievement="function-master">
+                            <div class="text-lg mb-1">🔧</div>
+                            <div class="text-xs text-gray-400">Function Master</div>
+                        </div>
+                        <div class="achievement-badge-tier3 rounded p-2 text-center" data-achievement="debug-ninja">
+                            <div class="text-lg mb-1">🐛</div>
+                            <div class="text-xs text-gray-400">Debug Ninja</div>
+                        </div>
+                        <div class="achievement-badge-tier3 rounded p-2 text-center" data-achievement="algorithm-expert">
+                            <div class="text-lg mb-1">🧠</div>
+                            <div class="text-xs text-gray-400">Algorithm Expert</div>
+                        </div>
+                        <div class="achievement-badge-tier3 rounded p-2 text-center" data-achievement="code-reviewer">
+                            <div class="text-lg mb-1">👁️</div>
+                            <div class="text-xs text-gray-400">Code Reviewer</div>
+                        </div>
+                        <div class="achievement-badge-tier3 rounded p-2 text-center" data-achievement="python-pro">
+                            <div class="text-lg mb-1">🐍</div>
+                            <div class="text-xs text-gray-400">Python Pro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Code Assistant -->
+    <div class="fixed bottom-4 left-4 bg-black bg-opacity-60 backdrop-blur-sm rounded-lg p-3 max-w-sm border border-purple-500">
+        <div class="flex items-center mb-2">
+            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-2">
+                <span class="text-white text-sm">🤖</span>
+            </div>
+            <div>
+                <h4 class="text-white font-bold text-sm">Code Assistant</h4>
+                <p class="text-xs text-purple-200">AI-Powered Development Helper</p>
+            </div>
+        </div>
+        <div class="bg-gray-900 rounded p-2 mb-2 text-xs text-green-400" id="assistantMessage">
+            Welcome to the Development Studio! 🚀 I can help you with Python syntax, debugging, and best practices. Try running your first program!
+        </div>
+        <div class="flex space-x-1">
+            <button class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700 flex-1">💡 Suggest</button>
+            <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 flex-1">🔍 Explain</button>
+            <button class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 flex-1">🐛 Debug</button>
+        </div>
+    </div>
+
+    <script>
+        // Tier 3 Professional Development Environment
+        let robot = {
+            x: 5,
+            y: 5,
+            steps: 0
+        };
+
+        let isRunning = false;
+        let currentProject = 'hello_world';
+
+        // Initialize grid
+        function initializeGrid() {
+            const grid = document.getElementById('robotGrid');
+            grid.innerHTML = '';
+            
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'w-6 h-6 border border-gray-600 flex items-center justify-center text-xs';
+                    cell.id = `cell-${col}-${row}`;
+                    
+                    if (col === robot.x && row === robot.y) {
+                        cell.innerHTML = '🤖';
+                        cell.className += ' bg-blue-600';
+                    } else {
+                        cell.className += ' bg-gray-800';
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Code execution
+        document.getElementById('runCode').addEventListener('click', runCode);
+        document.getElementById('debugCode').addEventListener('click', debugCode);
+        document.getElementById('stopCode').addEventListener('click', stopCode);
+        document.getElementById('saveCode').addEventListener('click', saveCode);
+
+        async function runCode() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            const console = document.getElementById('consoleOutput');
+            console.innerHTML = '<div class="text-green-400">>>> Running main.py...</div>';
+            
+            // Simulate code execution
+            await sleep(500);
+            console.innerHTML += '<div class="text-white">Hello, Python Developer!</div>';
+            
+            await sleep(500);
+            console.innerHTML += '<div class="text-blue-400">Moving robot right 3 steps...</div>';
+            await moveRobot('right', 3);
+            
+            await sleep(500);
+            console.innerHTML += '<div class="text-blue-400">Moving robot down 2 steps...</div>';
+            await moveRobot('down', 2);
+            
+            console.innerHTML += '<div class="text-green-400">>>> Program completed successfully!</div>';
+            console.innerHTML += '<div class="text-gray-400">Exit code: 0</div>';
+            
+            isRunning = false;
+            unlockAchievement('first-code');
+        }
+
+        async function moveRobot(direction, steps) {
+            for (let i = 0; i < steps; i++) {
+                if (direction === 'right' && robot.x < 9) {
+                    robot.x++;
+                } else if (direction === 'left' && robot.x > 0) {
+                    robot.x--;
+                } else if (direction === 'down' && robot.y < 9) {
+                    robot.y++;
+                } else if (direction === 'up' && robot.y > 0) {
+                    robot.y--;
+                }
+                
+                robot.steps++;
+                updateRobotPosition();
+                await sleep(300);
+            }
+        }
+
+        function updateRobotPosition() {
+            // Clear all cells
+            document.querySelectorAll('#robotGrid > div').forEach(cell => {
+                cell.innerHTML = '';
+                cell.className = cell.className.replace('bg-blue-600', 'bg-gray-800');
+            });
+            
+            // Place robot at new position
+            const cell = document.getElementById(`cell-${robot.x}-${robot.y}`);
+            if (cell) {
+                cell.innerHTML = '🤖';
+                cell.className = cell.className.replace('bg-gray-800', 'bg-blue-600');
+            }
+            
+            document.getElementById('robotPosition').textContent = `(${robot.x}, ${robot.y})`;
+            document.getElementById('robotSteps').textContent = robot.steps;
+        }
+
+        function debugCode() {
+            const console = document.getElementById('consoleOutput');
+            console.innerHTML = '<div class="text-yellow-400">>>> Debug mode activated</div>';
+            console.innerHTML += '<div class="text-blue-400">Setting breakpoint at line 9...</div>';
+            console.innerHTML += '<div class="text-green-400">Variables: robot_x=5, robot_y=5, steps=0</div>';
+            
+            document.getElementById('assistantMessage').innerHTML = 
+                '🐛 Debug mode active! I can help you step through your code line by line. Check the debug panel for variable values.';
+        }
+
+        function stopCode() {
+            isRunning = false;
+            const console = document.getElementById('consoleOutput');
+            console.innerHTML += '<div class="text-red-400">>>> Program stopped by user</div>';
+        }
+
+        function saveCode() {
+            const console = document.getElementById('consoleOutput');
+            console.innerHTML += '<div class="text-blue-400">>>> File saved: main.py</div>';
+            
+            document.getElementById('assistantMessage').innerHTML = 
+                '💾 Code saved successfully! Your progress is automatically backed up to the cloud.';
+        }
+
+        // Project management
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.project-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                
+                const project = card.dataset.project;
+                loadProject(project);
+            });
+        });
+
+        function loadProject(projectId) {
+            currentProject = projectId;
+            const projects = {
+                'hello_world': {
+                    title: 'Hello World',
+                    description: 'Learn Python basics with your first program!'
+                },
+                'robot_maze': {
+                    title: 'Robot Maze',
+                    description: 'Program a robot to navigate through complex mazes!'
+                },
+                'data_analysis': {
+                    title: 'Data Analysis',
+                    description: 'Analyze data and create visualizations with Python!'
+                }
+            };
+            
+            const project = projects[projectId];
+            if (project) {
+                document.getElementById('assistantMessage').innerHTML = 
+                    `🚀 Project loaded: ${project.title}<br>${project.description}`;
+            }
+        }
+
+        // Code snippets
+        document.querySelectorAll('.snippet-item').forEach(snippet => {
+            snippet.addEventListener('click', () => {
+                const snippetType = snippet.dataset.snippet;
+                insertCodeSnippet(snippetType);
+            });
+        });
+
+        function insertCodeSnippet(type) {
+            const snippets = {
+                'function': 'def my_function():\n    # Your code here\n    pass\n',
+                'for_loop': 'for i in range(10):\n    # Loop body\n    print(i)\n',
+                'if_statement': 'if condition:\n    # If true\n    pass\nelse:\n    # If false\n    pass\n',
+                'class': 'class MyClass:\n    def __init__(self):\n        pass\n'
+            };
+            
+            const console = document.getElementById('consoleOutput');
+            console.innerHTML += `<div class="text-purple-400">>>> Code snippet inserted: ${type}</div>`;
+            
+            unlockAchievement('function-master');
+        }
+
+        // Achievement system
+        function unlockAchievement(achievementId) {
+            const badge = document.querySelector(`[data-achievement="${achievementId}"]`);
+            if (badge && !badge.classList.contains('unlocked')) {
+                badge.classList.add('unlocked');
+                badge.querySelector('.text-gray-400').className = 'text-xs text-white';
+                
+                // Show achievement notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-purple-600 text-white p-3 rounded-lg shadow-lg z-50';
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xl mr-2">🏆</span>
+                        <div>
+                            <div class="font-bold text-sm">Achievement Unlocked!</div>
+                            <div class="text-xs">${achievementId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F5') {
+                e.preventDefault();
+                runCode();
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveCode();
+            }
+        });
+
+        // Initialize the interface
+        initializeGrid();
+        loadProject('hello_world');
+    </script>
+</body>
+</html>
+
